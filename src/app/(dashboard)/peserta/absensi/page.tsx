@@ -37,18 +37,9 @@ function getStatusBadge(
   checkInAt: string | null,
   checkOutAt: string | null
 ) {
-  if (checkOutAt) {
-    return "bg-emerald-500/10 text-emerald-600";
-  }
-
-  if (checkInAt) {
-    return "bg-blue-500/10 text-blue-600";
-  }
-
-  if (status === "pending") {
-    return "bg-amber-500/10 text-amber-600";
-  }
-
+  if (checkOutAt) return "bg-emerald-500/10 text-emerald-600";
+  if (checkInAt) return "bg-blue-500/10 text-blue-600";
+  if (status === "pending") return "bg-amber-500/10 text-amber-600";
   return "bg-muted text-muted-foreground";
 }
 
@@ -57,14 +48,16 @@ function getStatusLabel(
   checkInAt: string | null,
   checkOutAt: string | null
 ) {
-  if (checkOutAt) return "Selesai";
-  if (checkInAt) return "Sudah Check-In";
+  if (checkOutAt) return "Pulang";
+  if (checkInAt) return "Sudah Datang";
   if (status === "pending") return "Belum Absen";
   return status;
 }
 
 function getMonthOptions() {
-  const months = [
+  const year = new Date().getFullYear();
+
+  return [
     "01",
     "02",
     "03",
@@ -77,11 +70,9 @@ function getMonthOptions() {
     "10",
     "11",
     "12",
-  ];
-
-  return months.map((month) => ({
+  ].map((month) => ({
     value: month,
-    label: new Date(`2025-${month}-01`).toLocaleDateString("id-ID", {
+    label: new Date(`${year}-${month}-01`).toLocaleDateString("id-ID", {
       month: "long",
     }),
   }));
@@ -151,7 +142,7 @@ export default async function PesertaAbsensiPage({
                 Absensi Peserta
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
-                Datang dan Pulang menggunakan lokasi GPS kantor.
+                Datang dan pulang menggunakan lokasi GPS kantor.
               </p>
             </div>
 
@@ -245,7 +236,10 @@ export default async function PesertaAbsensiPage({
               </p>
             </div>
 
-            <form className="flex flex-col gap-2 sm:flex-row sm:flex-wrap" method="get">
+            <form
+              className="flex flex-col gap-2 sm:flex-row sm:flex-wrap"
+              method="get"
+            >
               <select
                 name="month"
                 defaultValue={selectedMonth}

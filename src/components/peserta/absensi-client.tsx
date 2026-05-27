@@ -1,10 +1,20 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { MapPin, LogIn, LogOut, Clock3, CircleCheckBig } from "lucide-react";
+import {
+  CalendarCheck2,
+  CircleCheckBig,
+  Clock3,
+  LogIn,
+  LogOut,
+  MapPin,
+} from "lucide-react";
 import { toast } from "sonner";
 
-import { checkInAttendance, checkOutAttendance } from "@/actions/peserta/absensi";
+import {
+  checkInAttendance,
+  checkOutAttendance,
+} from "@/actions/peserta/absensi";
 
 type AttendanceData = {
   check_in_at: string | null;
@@ -68,6 +78,12 @@ export function AbsensiClient({ todayAttendance }: AbsensiClientProps) {
   const isCheckedIn = Boolean(todayAttendance?.check_in_at);
   const isCheckedOut = Boolean(todayAttendance?.check_out_at);
 
+  const statusLabel = !isCheckedIn
+    ? "Belum Absen"
+    : isCheckedIn && !isCheckedOut
+      ? "Sudah Datang"
+      : "Selesai";
+
   const handleCheckIn = async () => {
     setMessage("");
 
@@ -117,22 +133,25 @@ export function AbsensiClient({ todayAttendance }: AbsensiClientProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-[30px] border bg-card p-6 shadow-sm">
-        <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+    <div className="space-y-4">
+      <div className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
+        <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
             <MapPin className="h-5 w-5" />
           </div>
 
           <div className="min-w-0">
-            <h3 className="text-lg font-semibold">Absensi Hari Ini</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Check-in dan check-out menggunakan GPS lokasi.
+            <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+              Absensi Hari Ini
+            </div>
+
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Lakukan absensi menggunakan lokasi GPS kantor.
             </p>
           </div>
         </div>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <button
             type="button"
             onClick={handleCheckIn}
@@ -140,7 +159,7 @@ export function AbsensiClient({ todayAttendance }: AbsensiClientProps) {
             className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-primary px-5 text-sm font-medium text-primary-foreground transition-all hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <LogIn className="h-4 w-4" />
-            {loadingIn ? "Memproses..." : "Check In"}
+            {loadingIn ? "Memproses..." : "Datang"}
           </button>
 
           <button
@@ -150,49 +169,54 @@ export function AbsensiClient({ todayAttendance }: AbsensiClientProps) {
             className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border bg-background px-5 text-sm font-medium transition-all hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
           >
             <LogOut className="h-4 w-4" />
-            {loadingOut ? "Memproses..." : "Check Out"}
+            {loadingOut ? "Memproses..." : "Pulang"}
           </button>
         </div>
 
-        <div className="mt-5 rounded-2xl bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+        <div className="mt-4 rounded-2xl bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
           {message || "Pastikan GPS aktif dan berada di area kantor."}
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-3xl border bg-card p-5 shadow-sm">
-          <p className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border bg-card p-4 shadow-sm">
+          <p className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
             <Clock3 className="h-3.5 w-3.5" />
-            Check In
+            Datang
           </p>
           <p className="mt-2 text-base font-semibold">
             {formatTime(todayAttendance?.check_in_at)}
           </p>
         </div>
 
-        <div className="rounded-3xl border bg-card p-5 shadow-sm">
-          <p className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+        <div className="rounded-2xl border bg-card p-4 shadow-sm">
+          <p className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
             <Clock3 className="h-3.5 w-3.5" />
-            Check Out
+            Pulang
           </p>
           <p className="mt-2 text-base font-semibold">
             {formatTime(todayAttendance?.check_out_at)}
           </p>
         </div>
 
-        <div className="rounded-3xl border bg-card p-5 shadow-sm">
-          <p className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+        <div className="rounded-2xl border bg-card p-4 shadow-sm">
+          <p className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground">
             <CircleCheckBig className="h-3.5 w-3.5" />
             Status
           </p>
-          <p className="mt-2 text-base font-semibold">
-            {!isCheckedIn
-              ? "Belum Absen"
-              : isCheckedIn && !isCheckedOut
-                ? "Sudah Check-In"
-                : "Selesai"}
-          </p>
+          <p className="mt-2 text-base font-semibold">{statusLabel}</p>
         </div>
+      </div>
+
+      <div className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
+        <div className="flex items-center gap-2">
+          <CalendarCheck2 className="h-5 w-5 text-primary" />
+          <h3 className="text-base font-semibold">Keterangan</h3>
+        </div>
+
+        <p className="mt-3 text-sm leading-7 text-muted-foreground">
+          Datang dan pulang menggunakan GPS lokasi kantor.
+        </p>
       </div>
     </div>
   );
