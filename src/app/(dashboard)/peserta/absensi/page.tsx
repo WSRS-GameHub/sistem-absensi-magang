@@ -151,7 +151,7 @@ export default async function PesertaAbsensiPage({
                 Absensi Peserta
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
-                Check-in dan check-out menggunakan lokasi GPS kantor.
+                Datang dan Pulang menggunakan lokasi GPS kantor.
               </p>
             </div>
 
@@ -279,8 +279,8 @@ export default async function PesertaAbsensiPage({
               <thead>
                 <tr className="border-b border-border/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
                   <th className="pb-3 pr-4 font-semibold">Tanggal</th>
-                  <th className="pb-3 pr-4 font-semibold">Check-In</th>
-                  <th className="pb-3 pr-4 font-semibold">Check-Out</th>
+                  <th className="pb-3 pr-4 font-semibold">Datang</th>
+                  <th className="pb-3 pr-4 font-semibold">Pulang</th>
                   <th className="pb-3 pr-4 font-semibold">Status</th>
                 </tr>
               </thead>
