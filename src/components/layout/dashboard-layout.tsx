@@ -44,13 +44,13 @@ export function DashboardLayout({
     user?.role === "admin"
       ? "Administrator"
       : user?.role === "manager"
-        ? "Manager"
-        : user?.division
-          ? `Divisi ${user.division}`
-          : null;
+      ? "Manager"
+      : user?.division
+      ? `Divisi ${user.division}`
+      : null;
 
   return (
-    <div className="min-h-[100dvh] bg-muted/20 md:flex md:h-screen md:overflow-hidden">
+    <div className="min-h-[100dvh] bg-[#F4F9FF] md:flex md:h-screen md:overflow-hidden">
       <DashboardSidebar
         title="Aplikasi Peserta Magang"
         navigation={navigation}
@@ -67,7 +67,9 @@ export function DashboardLayout({
         />
 
         <main className="min-w-0 flex-1 px-2 pb-4 pt-3 sm:px-3 sm:pb-5 sm:pt-4 md:overflow-y-auto md:px-4 lg:px-5 xl:px-6">
-          <div className="mx-auto w-full max-w-5xl">{children}</div>
+          <div className="mx-auto w-full max-w-5xl">
+            {children}
+          </div>
         </main>
       </div>
     </div>

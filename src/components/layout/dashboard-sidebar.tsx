@@ -63,8 +63,8 @@ function SidebarNav({
             className={cn(
               "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all",
               pathname === item.href
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              ? "bg-white text-[#0072CE] shadow-md font-semibold"
+              : "text-white/90 hover:bg-[#0062B8] hover:text-white"
             )}
           >
             <Icon className="h-4 w-4 shrink-0" />
@@ -116,24 +116,23 @@ export function DashboardSidebar({
       {/* SIDEBAR MOBILE */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-[9999] flex w-[250px] max-w-[82vw] flex-col border-r border-border/40 bg-background/95 backdrop-blur-xl md:hidden",
+          "fixed inset-y-0 left-0 z-[9999] flex w-[250px] max-w-[82vw] flex-col border-r border-blue-700 bg-[#0072CE] backdrop-blur-xl md:hidden",
           "transition-transform duration-300 ease-out",
           "shadow-[0_10px_40px_rgba(0,0,0,0.45)]",
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         {/* HEADER */}
-        <div className="flex items-center justify-between border-b border-border/30 px-4 py-4">
+        <div className="flex items-center justify-between border-b border-blue-700 px-4 py-4">
           <div className="flex items-center gap-3">
             <BrandMark />
 
             <div className="min-w-0">
-              <h1 className="truncate text-sm font-semibold tracking-tight">
+              <h1 className="truncate text-sm font-semibold tracking-tight text-white">
                 {title}
               </h1>
 
-              <p className="text-[11px] text-muted-foreground">
-                Corporate PLN
+              <p className="text-[11px] text-blue-100">
               </p>
             </div>
           </div>
@@ -141,7 +140,7 @@ export function DashboardSidebar({
           <button
             type="button"
             onClick={onCloseMobile}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-border/40 bg-background/70 hover:bg-muted"
+            className="flex h-8 w-8 items-center justify-center rounded-full border-t border-blue-700 bg-white/10 text-white hover:bg-white/20 transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
@@ -160,7 +159,7 @@ export function DashboardSidebar({
         <div className="border-t border-border/30 p-3">
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-white hover:bg-white/15 hover:text-white transition-all"
           >
             <LogOut className="h-4 w-4" />
             <span>Logout</span>
@@ -169,14 +168,14 @@ export function DashboardSidebar({
       </aside>
 
       {/* DESKTOP */}
-      <aside className="hidden w-[240px] shrink-0 flex-col border-r border-border/40 bg-background/80 backdrop-blur-xl md:sticky md:top-0 md:flex md:h-screen">
+      <aside className="hidden w-[240px] shrink-0 flex-col border-r border-blue-700 bg-[#0072CE] backdrop-blur-xl md:sticky md:top-0 md:flex md:h-screen">
         {/* HEADER */}
-        <div className="border-b border-border/30 px-5 py-5">
+        <div className="border-b border-blue-700 px-5 py-5">
           <div className="flex items-center gap-3">
             <BrandMark />
 
             <div className="min-w-0">
-              <h1 className="truncate text-base font-semibold tracking-tight">
+              <h1 className="truncate text-base font-semibold tracking-tight text-white">
                 {title}
               </h1>
             </div>
@@ -189,10 +188,10 @@ export function DashboardSidebar({
         </div>
 
         {/* FOOTER */}
-        <div className="border-t border-border/30 p-4">
+        <div className="border-t border-blue-700 p-4">
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white hover:bg-white/15 hover:text-white transition-all"
           >
             <LogOut className="h-4 w-4" />
             <span>Logout</span>
