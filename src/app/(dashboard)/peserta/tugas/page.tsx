@@ -42,10 +42,24 @@ function formatDate(value: string | null) {
 }
 
 function getStatusBadge(status: TaskUserRow["status"]) {
-  if (status === "in_progress") return "bg-blue-500/10 text-blue-600";
-  if (status === "submitted") return "bg-violet-500/10 text-violet-600";
-  if (status === "selesai") return "bg-emerald-500/10 text-emerald-600";
-  return "bg-amber-500/10 text-amber-600";
+  if (status === "in_progress") return "bg-blue-100 text-blue-700";
+  if (status === "submitted") return "bg-violet-100 text-violet-700";
+  if (status === "selesai") return "bg-emerald-100 text-emerald-700";
+  return "bg-amber-100 text-amber-700";
+}
+
+function getCardAccent(status: TaskUserRow["status"]) {
+  if (status === "in_progress") return "border-blue-200 bg-gradient-to-br from-blue-50 via-white to-white";
+  if (status === "submitted") return "border-violet-200 bg-gradient-to-br from-violet-50 via-white to-white";
+  if (status === "selesai") return "border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-white";
+  return "border-amber-200 bg-gradient-to-br from-amber-50 via-white to-white";
+}
+
+function getCardHoverAccent(status: TaskUserRow["status"]) {
+  if (status === "in_progress") return "hover:border-blue-300";
+  if (status === "submitted") return "hover:border-violet-300";
+  if (status === "selesai") return "hover:border-emerald-300";
+  return "hover:border-amber-300";
 }
 
 function getStatusLabel(status: TaskUserRow["status"]) {
@@ -103,50 +117,57 @@ export default async function PesertaTugasPage() {
   return (
     <DashboardLayout navigation={pesertaNavigation}>
       <div className="space-y-4 sm:space-y-5">
-        <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
-          <div className="flex flex-col gap-2">
-            <div className="inline-flex w-fit items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              Tugas Peserta
+        {/* Header banner — gradasi biru senada dengan dashboard utama */}
+        <section className="relative overflow-hidden rounded-[22px] bg-gradient-to-br from-blue-600 via-blue-600 to-blue-800 p-5 shadow-sm sm:p-6">
+          <div className="pointer-events-none absolute -right-10 -top-10 h-56 w-56 rounded-full bg-white/10" />
+          <div className="pointer-events-none absolute -bottom-16 right-24 h-40 w-40 rounded-full bg-white/5" />
+          <div className="relative flex flex-col gap-2">
+            <div className="inline-flex w-fit items-center rounded-full bg-amber-300 px-3 py-1 text-xs font-bold tracking-wide text-blue-900">
+              TUGAS PESERTA
             </div>
-            <p className="text-sm text-muted-foreground sm:text-[15px]">
-              Lihat tugas yang diberikan kepada kamu dan pantau status pengerjaannya.
+            <p className="text-sm text-blue-50 sm:text-[15px]">
+              Pantau seluruh tugasmu dan progres pengerjaannya di satu tempat.
             </p>
           </div>
         </section>
 
+        {/* Ringkasan statistik */}
         <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl border bg-card p-4 shadow-sm">
-            <p className="text-xs text-muted-foreground">Total Tugas</p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight">{total}</h2>
+          <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-white to-blue-50/50 p-4 shadow-sm">
+            <p className="text-xs font-medium text-slate-500">Total Tugas</p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-blue-900">{total}</h2>
           </div>
 
-          <div className="rounded-2xl border bg-card p-4 shadow-sm">
-            <p className="text-xs text-muted-foreground">Belum Dimulai</p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight">{pending}</h2>
+          <div className="rounded-2xl border border-amber-100 bg-gradient-to-br from-white to-amber-50/50 p-4 shadow-sm">
+            <p className="text-xs font-medium text-slate-500">Belum Dimulai</p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-amber-600">{pending}</h2>
           </div>
 
-          <div className="rounded-2xl border bg-card p-4 shadow-sm">
-            <p className="text-xs text-muted-foreground">Sedang Dikerjakan</p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight">{inProgress}</h2>
+          <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-white to-blue-50/50 p-4 shadow-sm">
+            <p className="text-xs font-medium text-slate-500">Sedang Dikerjakan</p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-blue-600">{inProgress}</h2>
           </div>
 
-          <div className="rounded-2xl border bg-card p-4 shadow-sm">
-            <p className="text-xs text-muted-foreground">Selesai</p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight">{selesai}</h2>
+          <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-white to-emerald-50/50 p-4 shadow-sm">
+            <p className="text-xs font-medium text-slate-500">Selesai</p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-emerald-600">{selesai}</h2>
           </div>
         </section>
 
+        {/* Daftar tugas */}
         <section className="space-y-3">
           {rows.length > 0 ? (
             rows.map((item) => (
               <div
                 key={item.id}
-                className="rounded-[22px] border bg-card p-4 shadow-sm transition-colors hover:bg-muted/20 sm:p-5"
+                className={`rounded-[22px] border p-4 shadow-sm transition-colors sm:p-5 ${getCardAccent(
+                  item.status
+                )} ${getCardHoverAccent(item.status)}`}
               >
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-base font-semibold tracking-tight sm:text-lg">
+                      <h3 className="text-base font-semibold tracking-tight text-blue-900 sm:text-lg">
                         {item.task?.title ?? "Data tugas tidak ditemukan"}
                       </h3>
 
@@ -159,29 +180,29 @@ export default async function PesertaTugasPage() {
                       </span>
                     </div>
 
-                    <p className="mt-2 max-w-3xl text-sm leading-7 text-muted-foreground">
-                      {item.task?.description ?? "-"}
+                    <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
+                      {item.task?.description ?? "Belum ada deskripsi untuk tugas ini."}
                     </p>
 
-                    <div className="mt-3 flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+                    <div className="mt-3 flex flex-col gap-1 text-sm text-slate-500 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
                       <span>Deadline: {formatDate(item.task?.due_date ?? null)}</span>
-                      <span className="hidden sm:inline">•</span>
+                      <span className="hidden text-blue-300 sm:inline">•</span>
                       <span>Target: {getTargetLabel(item.task)}</span>
                     </div>
                   </div>
 
                   <Link
                     href={`/peserta/tugas/${item.tugas_id}`}
-                    className="inline-flex h-9 w-fit items-center justify-center rounded-2xl border bg-background px-4 text-sm font-medium hover:bg-muted"
+                    className="inline-flex h-9 w-fit items-center justify-center rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 px-4 text-sm font-semibold text-blue-900 shadow-sm transition-colors hover:from-amber-300 hover:to-amber-400"
                   >
-                    Detail
+                    Detail →
                   </Link>
                 </div>
               </div>
             ))
           ) : (
-            <div className="rounded-[22px] border bg-card p-8 text-center text-sm text-muted-foreground shadow-sm sm:p-10">
-              Belum ada tugas untuk kamu.
+            <div className="rounded-[22px] border border-dashed border-blue-200 bg-gradient-to-br from-blue-50/40 to-white p-8 text-center text-sm text-slate-400 shadow-sm sm:p-10">
+              Belum ada tugas yang diberikan untukmu saat ini.
             </div>
           )}
         </section>

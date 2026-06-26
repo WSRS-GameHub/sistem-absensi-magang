@@ -8,7 +8,7 @@ export function BrandMark() {
 
   if (hasError) {
     return (
-      <div className="text-lg font-bold text-white">
+      <div className="text-base font-bold text-white">
         PLN
       </div>
     );
@@ -18,9 +18,9 @@ export function BrandMark() {
     <Image
       src="/pln.png"
       alt="Logo PLN"
-      width={60}
-      height={60}
-      className="h-11 w-auto object-contain"
+      width={40}
+      height={40}
+      className="h-8 w-auto object-contain"
       priority
       onError={() => setHasError(true)}
     />

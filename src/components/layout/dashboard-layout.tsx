@@ -50,7 +50,7 @@ export function DashboardLayout({
       : null;
 
   return (
-    <div className="min-h-[100dvh] bg-[#F4F9FF] md:flex md:h-screen md:overflow-hidden">
+    <div className="min-h-[100dvh] bg-[#0A1628] md:flex md:h-screen md:overflow-hidden">
       <DashboardSidebar
         title="SIATAMA"
         navigation={navigation}
@@ -66,7 +66,7 @@ export function DashboardLayout({
           onMenuClick={() => setMobileOpen(true)}
         />
 
-        <main className="min-w-0 flex-1 px-2 pb-4 pt-3 sm:px-3 sm:pb-5 sm:pt-4 md:overflow-y-auto md:px-4 lg:px-5 xl:px-6">
+        <main className="min-w-0 flex-1 bg-[#0A1628] px-2 pb-4 pt-3 sm:px-3 sm:pb-5 sm:pt-4 md:overflow-y-auto md:px-4 lg:px-5 xl:px-6">
           <div className="mx-auto w-full max-w-5xl">
             {children}
           </div>

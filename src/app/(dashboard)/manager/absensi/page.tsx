@@ -23,7 +23,6 @@ type ProfileRow = {
 
 function formatDate(value: string | null) {
   if (!value) return "-";
-
   return new Date(value).toLocaleDateString("id-ID", {
     day: "2-digit",
     month: "short",
@@ -33,7 +32,6 @@ function formatDate(value: string | null) {
 
 function formatTime(value: string | null) {
   if (!value) return "-";
-
   return new Date(value).toLocaleTimeString("id-ID", {
     hour: "2-digit",
     minute: "2-digit",
@@ -51,13 +49,25 @@ function getStatus(checkIn: string | null, checkOut: string | null) {
   if (checkIn) {
     return {
       label: "Sudah Check-in",
-      className: "bg-blue-500/10 text-blue-600",
+      // Blue accent
+      className: "",
+      style: {
+        background: "#0072CE12",
+        color: "#0072CE",
+        border: "1px solid #0072CE30",
+      },
     };
   }
 
   return {
     label: "Belum Absen",
-    className: "bg-amber-500/10 text-amber-600",
+    // Yellow accent
+    className: "",
+    style: {
+      background: "#FFE60025",
+      color: "#7a6200",
+      border: "1px solid #FFE60070",
+    },
   };
 }
 
@@ -68,97 +78,123 @@ export default async function ManagerAbsensiPage() {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  const [
-    { data: attendanceData },
-    { data: participantData },
-  ] = await Promise.all([
-    supabase
-      .from("absensi")
-      .select(
-        "id, user_id, tanggal, check_in_at, check_out_at, created_at"
-      )
-      .order("created_at", { ascending: false })
-      .limit(50),
+  const [{ data: attendanceData }, { data: participantData }] =
+    await Promise.all([
+      supabase
+        .from("absensi")
+        .select("id, user_id, tanggal, check_in_at, check_out_at, created_at")
+        .order("created_at", { ascending: false })
+        .limit(50),
 
-    supabase
-      .from("profiles")
-      .select("id, nama, division")
-      .eq("role", "peserta")
-      .eq("is_active", true),
-  ]);
+      supabase
+        .from("profiles")
+        .select("id, nama, division")
+        .eq("role", "peserta")
+        .eq("is_active", true),
+    ]);
 
   const attendances = (attendanceData ?? []) as AttendanceRow[];
-
   const participants = (participantData ?? []) as ProfileRow[];
 
-  const participantMap = new Map(
-    participants.map((item) => [item.id, item])
-  );
+  const participantMap = new Map(participants.map((item) => [item.id, item]));
 
-  const todayAttendances = attendances.filter(
-    (item) => item.tanggal === today
-  );
-
-  const checkedInCount = todayAttendances.filter(
-    (item) => item.check_in_at
-  ).length;
-
-  const checkedOutCount = todayAttendances.filter(
-    (item) => item.check_out_at
-  ).length;
+  const todayAttendances = attendances.filter((item) => item.tanggal === today);
+  const checkedInCount = todayAttendances.filter((item) => item.check_in_at).length;
+  const checkedOutCount = todayAttendances.filter((item) => item.check_out_at).length;
 
   return (
     <DashboardLayout navigation={managerNavigation}>
       <div className="space-y-5">
-        <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
-          <div>
-            <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+
+        {/* Header */}
+        <section
+          className="rounded-[22px] p-5 shadow-sm relative overflow-hidden"
+          style={{ background: "linear-gradient(135deg, #0072CE 0%, #005baa 100%)" }}
+        >
+          <div
+            className="absolute top-0 right-0 h-full w-1.5 rounded-r-[22px]"
+            style={{ background: "#FFE600" }}
+          />
+          <div
+            className="pointer-events-none absolute -top-8 -right-8 h-36 w-36 rounded-full opacity-10"
+            style={{ background: "#FFE600" }}
+          />
+
+          <div className="relative">
+            <div
+              className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold tracking-wide"
+              style={{ background: "#FFE600", color: "#003d7a" }}
+            >
               Monitoring Absensi
             </div>
-
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-2 text-sm text-blue-100">
               Monitoring data absensi peserta magang.
             </p>
           </div>
         </section>
 
+        {/* Stats Cards */}
         <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          <div className="rounded-[20px] border bg-card p-4 shadow-sm">
-            <p className="text-xs text-muted-foreground">
-              Absensi Hari Ini
-            </p>
-
-            <h2 className="mt-2 text-2xl font-bold tracking-tight">
+          {/* Absensi Hari Ini */}
+          <div
+            className="rounded-[20px] p-4 shadow-sm relative overflow-hidden border-0"
+            style={{ background: "#0072CE" }}
+          >
+            <div
+              className="absolute bottom-0 right-0 h-16 w-16 rounded-tl-full opacity-20"
+              style={{ background: "#FFE600" }}
+            />
+            <p className="text-xs font-medium text-blue-100">Absensi Hari Ini</p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-white">
               {todayAttendances.length}
             </h2>
           </div>
 
-          <div className="rounded-[20px] border bg-card p-4 shadow-sm">
-            <p className="text-xs text-muted-foreground">
+          {/* Sudah Check-in */}
+          <div
+            className="rounded-[20px] p-4 shadow-sm border"
+            style={{ borderColor: "#0072CE33", background: "#0072CE0d" }}
+          >
+            <p className="text-xs font-medium" style={{ color: "#0072CE" }}>
               Sudah Check-in
             </p>
-
-            <h2 className="mt-2 text-2xl font-bold tracking-tight">
+            <h2
+              className="mt-2 text-2xl font-bold tracking-tight"
+              style={{ color: "#0072CE" }}
+            >
               {checkedInCount}
             </h2>
           </div>
 
-          <div className="rounded-[20px] border bg-card p-4 shadow-sm">
-            <p className="text-xs text-muted-foreground">
-              Sudah Check-out
-            </p>
-
-            <h2 className="mt-2 text-2xl font-bold tracking-tight">
+          {/* Sudah Check-out */}
+          <div
+            className="rounded-[20px] p-4 shadow-sm border"
+            style={{ borderColor: "#FFE60055", background: "#FFE6000d" }}
+          >
+            <p className="text-xs font-medium text-amber-700">Sudah Check-out</p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-amber-700">
               {checkedOutCount}
             </h2>
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-[22px] border bg-card shadow-sm">
-          <div className="border-b border-border/40 px-4 py-4 sm:px-5">
+        {/* Table Section */}
+        <section
+          className="overflow-hidden rounded-[22px] bg-card shadow-sm"
+          style={{ border: "1px solid #0072CE1a" }}
+        >
+          {/* Table Header */}
+          <div
+            className="border-b px-4 py-4 sm:px-5"
+            style={{ borderColor: "#0072CE1a" }}
+          >
             <div className="flex items-center gap-2">
-              <CalendarCheck2 className="h-5 w-5 text-primary" />
-
+              <div
+                className="flex h-8 w-8 items-center justify-center rounded-xl"
+                style={{ background: "#0072CE15" }}
+              >
+                <CalendarCheck2 className="h-4 w-4" style={{ color: "#0072CE" }} />
+              </div>
               <h3 className="text-sm font-semibold tracking-tight sm:text-base">
                 Data Absensi Peserta
               </h3>
@@ -168,51 +204,34 @@ export default async function ManagerAbsensiPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px]">
               <thead>
-                <tr className="border-b border-border/40 bg-muted/20 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                  <th className="px-4 py-3 font-semibold sm:px-5">
-                    Nama
-                  </th>
-
-                  <th className="px-4 py-3 font-semibold">
-                    Divisi
-                  </th>
-
-                  <th className="px-4 py-3 font-semibold">
-                    Tanggal
-                  </th>
-
-                  <th className="px-4 py-3 font-semibold">
-                    Check-in
-                  </th>
-
-                  <th className="px-4 py-3 font-semibold">
-                    Check-out
-                  </th>
-
-                  <th className="px-4 py-3 font-semibold">
-                    Status
-                  </th>
+                <tr
+                  className="text-left text-[11px] uppercase tracking-wider"
+                  style={{
+                    borderBottom: "1px solid #0072CE1a",
+                    background: "#0072CE08",
+                    color: "#0072CE",
+                  }}
+                >
+                  <th className="px-4 py-3 font-semibold sm:px-5">Nama</th>
+                  <th className="px-4 py-3 font-semibold">Divisi</th>
+                  <th className="px-4 py-3 font-semibold">Tanggal</th>
+                  <th className="px-4 py-3 font-semibold">Check-in</th>
+                  <th className="px-4 py-3 font-semibold">Check-out</th>
+                  <th className="px-4 py-3 font-semibold">Status</th>
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-border/20">
+              <tbody className="divide-y" style={{ borderColor: "#0072CE0f" }}>
                 {attendances.length > 0 ? (
                   attendances.map((item, index) => {
-                    const participant =
-                      participantMap.get(item.user_id);
-
-                    const status = getStatus(
-                      item.check_in_at,
-                      item.check_out_at
-                    );
+                    const participant = participantMap.get(item.user_id);
+                    const status = getStatus(item.check_in_at, item.check_out_at);
 
                     return (
                       <tr
                         key={item.id}
-                        className={`transition-colors hover:bg-muted/20 ${
-                          index % 2 === 0
-                            ? "bg-background"
-                            : "bg-muted/[0.02]"
+                        className={`transition-colors hover:bg-[#FFE60010] ${
+                          index % 2 === 0 ? "bg-transparent" : "bg-[#0072CE04]"
                         }`}
                       >
                         <td className="px-4 py-4 sm:px-5">
@@ -231,16 +250,20 @@ export default async function ManagerAbsensiPage() {
 
                         <td className="px-4 py-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
-                            <Clock3 className="h-4 w-4" />
-
+                            <Clock3
+                              className="h-4 w-4"
+                              style={{ color: item.check_in_at ? "#0072CE" : undefined }}
+                            />
                             {formatTime(item.check_in_at)}
                           </div>
                         </td>
 
                         <td className="px-4 py-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
-                            <Clock3 className="h-4 w-4" />
-
+                            <Clock3
+                              className="h-4 w-4"
+                              style={{ color: item.check_out_at ? "#0072CE" : undefined }}
+                            />
                             {formatTime(item.check_out_at)}
                           </div>
                         </td>
@@ -248,6 +271,7 @@ export default async function ManagerAbsensiPage() {
                         <td className="px-4 py-4">
                           <span
                             className={`inline-flex rounded-full px-3 py-1 text-[11px] font-medium ${status.className}`}
+                            style={status.style}
                           >
                             {status.label}
                           </span>

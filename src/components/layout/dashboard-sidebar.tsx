@@ -123,17 +123,14 @@ export function DashboardSidebar({
         )}
       >
         {/* HEADER */}
-        <div className="flex items-center justify-between border-b border-blue-700 px-4 py-3">
-          <div className="flex items-center gap-3">
-            <BrandMark />
+            <div className="px-5 pt-4 pb-2">
+            <div className="flex flex-col items-center">
+              <BrandMark />
 
-            <div className="min-w-0">
-              <h1 className="truncate text-sm font-semibold tracking-tight text-white">
+                      <div className="min-w-0">
+                        <h1 className="mt-1 text-center text-base font-semibold tracking-[0.05em] text-white">
                 {title}
               </h1>
-
-              <p className="text-[11px] text-blue-100">
-              </p>
             </div>
           </div>
 
@@ -170,17 +167,21 @@ export function DashboardSidebar({
       {/* DESKTOP */}
       <aside className="hidden w-[240px] shrink-0 flex-col border-r border-blue-700 bg-[#0072CE] backdrop-blur-xl md:sticky md:top-0 md:flex md:h-screen">
         {/* HEADER */}
-            <div className="border-b border-blue-700 px-5 py-6">
-            <div className="flex flex-col items-center justify-center">
-              <BrandMark />
-            <div className="min-w-0">
-              <h1 className="mt-3 text-center text-2xl font-bold tracking-wide text-white">
-                {title}
-              </h1>
+          <div className="px-4 py-4">
+  <div className="flex items-center gap-3">
+    <BrandMark />
 
-            </div>
-          </div>
-        </div>
+    <div className="min-w-0">
+      <h1 className="text-lg font-bold leading-none text-white">
+        {title}
+      </h1>
+
+      <p className="mt-1 text-[11px] text-white/70">
+        Sistem Informasi Magang
+      </p>
+    </div>
+  </div>
+</div>
 
         {/* NAVIGATION */}
         <div className="flex-1 overflow-y-auto">

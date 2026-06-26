@@ -5,6 +5,7 @@ import {
   CalendarCheck2,
   CheckCircle2,
   ClipboardList,
+  Sparkles,
   Users,
 } from "lucide-react";
 
@@ -156,7 +157,7 @@ export default async function ManagerDashboardPage() {
       value: String(totalParticipants ?? 0),
       desc: "Peserta aktif",
       icon: Users,
-      tone: "bg-blue-500/10 text-blue-600",
+      tone: "bg-[#0072CE] text-white",
       href: "/manager/peserta",
     },
     {
@@ -164,7 +165,7 @@ export default async function ManagerDashboardPage() {
       value: String(todayAttendanceCount ?? 0),
       desc: `${attendanceRate}% hadir`,
       icon: CalendarCheck2,
-      tone: "bg-emerald-500/10 text-emerald-600",
+      tone: "bg-[#FFE600] text-[#0A2540]",
       href: "/manager/absensi",
     },
     {
@@ -172,7 +173,7 @@ export default async function ManagerDashboardPage() {
       value: String(totalTasks ?? 0),
       desc: `${progresTugas}% progres`,
       icon: ClipboardList,
-      tone: "bg-violet-500/10 text-violet-600",
+      tone: "bg-[#0A2540] text-white",
       href: "/manager/tugas",
     },
     {
@@ -180,26 +181,32 @@ export default async function ManagerDashboardPage() {
       value: String(selesaiCount),
       desc: "Terkirim / selesai",
       icon: Activity,
-      tone: "bg-amber-500/10 text-amber-600",
+      tone: "bg-[#0072CE]/10 text-[#0072CE]",
       href: "/manager/tugas",
     },
   ];
 
   return (
     <DashboardLayout navigation={managerNavigation}>
-      <div className="space-y-4 sm:space-y-5">
-        <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
-          <div>
-            <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+      <div className="space-y-5">
+        {/* Header banner */}
+        <section className="relative overflow-hidden rounded-[24px] bg-[#0072CE] p-5 shadow-sm sm:p-7">
+          <div className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rotate-12 rounded-[28px] bg-[#FFE600]/90" />
+          <div className="pointer-events-none absolute -right-2 top-10 h-20 w-20 rotate-12 rounded-2xl bg-white/10" />
+
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+              <Sparkles className="h-3.5 w-3.5 text-[#FFE600]" />
               Dashboard Manager
             </div>
 
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-3 max-w-xl text-sm leading-6 text-white/85">
               Monitoring peserta, absensi, dan progres tugas magang.
             </p>
           </div>
         </section>
 
+        {/* Stat cards */}
         <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {stats.map((item) => {
             const Icon = item.icon;
@@ -208,7 +215,7 @@ export default async function ManagerDashboardPage() {
               <Link
                 key={item.title}
                 href={item.href}
-                className="rounded-[20px] border bg-card p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                className="rounded-[20px] border border-[#0072CE]/10 bg-card p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#0072CE]/30 hover:shadow-md"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -216,7 +223,7 @@ export default async function ManagerDashboardPage() {
                       {item.title}
                     </p>
 
-                    <h2 className="mt-2 text-2xl font-bold tracking-tight">
+                    <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground">
                       {item.value}
                     </h2>
 
@@ -234,11 +241,12 @@ export default async function ManagerDashboardPage() {
           })}
         </section>
 
-        <div className="grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
-          <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
+        <div className="grid gap-5 xl:grid-cols-[1.08fr_0.92fr]">
+          {/* Progress tugas */}
+          <section className="rounded-[22px] border border-[#0072CE]/10 bg-card p-5 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h3 className="text-lg font-semibold">
+                <h3 className="text-lg font-semibold tracking-tight text-foreground">
                   Progress Tugas
                 </h3>
 
@@ -249,7 +257,7 @@ export default async function ManagerDashboardPage() {
 
               <Link
                 href="/manager/tugas"
-                className="inline-flex h-9 items-center gap-2 rounded-2xl border px-4 text-sm font-medium hover:bg-muted"
+                className="inline-flex h-9 items-center gap-2 rounded-xl border border-[#0072CE]/15 px-4 text-sm font-medium text-[#0072CE] transition-colors hover:bg-[#0072CE]/[0.06]"
               >
                 Semua
                 <ArrowUpRight className="h-4 w-4" />
@@ -278,12 +286,12 @@ export default async function ManagerDashboardPage() {
                   return (
                     <div
                       key={task.id}
-                      className="rounded-2xl border bg-muted/30 p-4"
+                      className="rounded-2xl border border-[#0072CE]/10 bg-[#0072CE]/[0.03] p-4"
                     >
                       <div className="flex flex-col gap-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <p className="truncate font-medium">
+                            <p className="truncate font-medium text-foreground">
                               {task.title}
                             </p>
 
@@ -292,14 +300,14 @@ export default async function ManagerDashboardPage() {
                             </p>
                           </div>
 
-                          <span className="text-xs text-muted-foreground">
+                          <span className="rounded-full bg-[#0072CE]/10 px-2 py-0.5 text-xs font-semibold text-[#0072CE]">
                             {progres}%
                           </span>
                         </div>
 
-                        <div className="h-2 overflow-hidden rounded-full bg-background">
+                        <div className="h-2 overflow-hidden rounded-full bg-[#0072CE]/10">
                           <div
-                            className="h-full rounded-full bg-primary"
+                            className="h-full rounded-full bg-[#0072CE]"
                             style={{
                               width: `${progres}%`,
                             }}
@@ -311,7 +319,7 @@ export default async function ManagerDashboardPage() {
                             {selesai}/{total} selesai
                           </span>
 
-                          <span>
+                          <span className="rounded-full bg-[#FFE600]/25 px-2 py-0.5 font-medium text-[#0A2540]">
                             {task.target_type === "division"
                               ? task.target_division
                               : "Semua"}
@@ -322,17 +330,18 @@ export default async function ManagerDashboardPage() {
                   );
                 })
               ) : (
-                <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                <div className="rounded-2xl border border-dashed border-[#0072CE]/20 p-8 text-center text-sm text-muted-foreground">
                   Belum ada tugas.
                 </div>
               )}
             </div>
           </section>
 
-          <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
+          {/* Absensi hari ini */}
+          <section className="rounded-[22px] border border-[#0072CE]/10 bg-card p-5 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h3 className="text-lg font-semibold">
+                <h3 className="text-lg font-semibold tracking-tight text-foreground">
                   Absensi Hari Ini
                 </h3>
 
@@ -343,7 +352,7 @@ export default async function ManagerDashboardPage() {
 
               <Link
                 href="/manager/absensi"
-                className="inline-flex h-9 items-center gap-2 rounded-2xl border px-4 text-sm font-medium hover:bg-muted"
+                className="inline-flex h-9 items-center gap-2 rounded-xl border border-[#0072CE]/15 px-4 text-sm font-medium text-[#0072CE] transition-colors hover:bg-[#0072CE]/[0.06]"
               >
                 Semua
                 <ArrowUpRight className="h-4 w-4" />
@@ -355,11 +364,15 @@ export default async function ManagerDashboardPage() {
                 attendances.map((item) => (
                   <div
                     key={item.id}
-                    className="rounded-2xl border bg-muted/30 p-4"
+                    className="flex items-center gap-3 rounded-2xl border border-[#0072CE]/10 bg-[#0072CE]/[0.03] p-4"
                   >
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0072CE]/10 text-[#0072CE]">
+                      <CalendarCheck2 className="h-4 w-4" />
+                    </div>
+
+                    <div className="flex flex-1 items-center justify-between gap-3">
                       <div>
-                        <p className="font-medium">
+                        <p className="font-medium text-foreground">
                           Absensi tercatat
                         </p>
 
@@ -368,7 +381,7 @@ export default async function ManagerDashboardPage() {
                         </p>
                       </div>
 
-                      <span className="text-xs text-muted-foreground">
+                      <span className="rounded-full bg-[#FFE600]/25 px-2.5 py-1 text-xs font-semibold text-[#0A2540]">
                         {item.check_in_at
                           ? new Date(
                               item.check_in_at
@@ -382,7 +395,7 @@ export default async function ManagerDashboardPage() {
                   </div>
                 ))
               ) : (
-                <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                <div className="rounded-2xl border border-dashed border-[#0072CE]/20 p-8 text-center text-sm text-muted-foreground">
                   Belum ada absensi.
                 </div>
               )}
@@ -390,10 +403,11 @@ export default async function ManagerDashboardPage() {
           </section>
         </div>
 
-        <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
+        {/* Peserta aktif */}
+        <section className="rounded-[22px] border border-[#0072CE]/10 bg-card p-5 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-lg font-semibold">
+              <h3 className="text-lg font-semibold tracking-tight text-foreground">
                 Peserta Aktif
               </h3>
 
@@ -404,7 +418,7 @@ export default async function ManagerDashboardPage() {
 
             <Link
               href="/manager/peserta"
-              className="inline-flex h-9 items-center gap-2 rounded-2xl border px-4 text-sm font-medium hover:bg-muted"
+              className="inline-flex h-9 items-center gap-2 rounded-xl border border-[#0072CE]/15 px-4 text-sm font-medium text-[#0072CE] transition-colors hover:bg-[#0072CE]/[0.06]"
             >
               Semua
               <ArrowUpRight className="h-4 w-4" />
@@ -416,41 +430,51 @@ export default async function ManagerDashboardPage() {
               participants.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-2xl border bg-muted/30 p-4"
+                  className="rounded-2xl border border-[#0072CE]/10 bg-[#0072CE]/[0.03] p-4 transition-colors hover:border-[#0072CE]/30"
                 >
-                  <p className="font-medium">{item.nama}</p>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0072CE]/10 text-[#0072CE]">
+                    <Users className="h-4 w-4" />
+                  </div>
+
+                  <p className="mt-3 truncate font-medium text-foreground">
+                    {item.nama}
+                  </p>
 
                   <p className="mt-1 text-sm text-muted-foreground">
                     Divisi {item.division ?? "-"}
                   </p>
 
-                  <span className="mt-3 inline-flex rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-600">
+                  <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#FFE600]/25 px-2.5 py-1 text-[11px] font-semibold text-[#0A2540]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#0A2540]" />
                     Aktif
                   </span>
                 </div>
               ))
             ) : (
-              <div className="col-span-full rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+              <div className="col-span-full rounded-2xl border border-dashed border-[#0072CE]/20 p-8 text-center text-sm text-muted-foreground">
                 Belum ada peserta.
               </div>
             )}
           </div>
         </section>
 
-        <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-
-            <h3 className="text-lg font-semibold">
-              Informasi Akses
-            </h3>
+        {/* Informasi akses */}
+        <section className="flex gap-3 rounded-[22px] border-l-4 border-[#FFE600] bg-[#0072CE]/[0.04] p-5 shadow-sm">
+          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0072CE] text-white">
+            <CheckCircle2 className="h-4.5 w-4.5" />
           </div>
 
-          <p className="mt-3 text-sm leading-7 text-muted-foreground">
-            Manager hanya memiliki akses monitoring untuk melihat
-            data peserta, absensi, dan progres tugas tanpa
-            mengubah data sistem.
-          </p>
+          <div>
+            <h3 className="text-lg font-semibold tracking-tight text-foreground">
+              Informasi Akses
+            </h3>
+
+            <p className="mt-1.5 text-sm leading-7 text-muted-foreground">
+              Manager hanya memiliki akses monitoring untuk melihat
+              data peserta, absensi, dan progres tugas tanpa
+              mengubah data sistem.
+            </p>
+          </div>
         </section>
       </div>
     </DashboardLayout>

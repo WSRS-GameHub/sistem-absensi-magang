@@ -1,12 +1,12 @@
 import Link from "next/link";
 import {
   ArrowLeft,
-  BadgeCheck,
   BriefcaseBusiness,
   Mail,
   Phone,
   ShieldCheck,
-  User2,
+  Sparkles,
+  UserRound,
 } from "lucide-react";
 
 import { requireRole } from "@/lib/auth/require-role";
@@ -56,22 +56,31 @@ export default async function PesertaEditProfilePage() {
 
   return (
     <DashboardLayout navigation={pesertaNavigation}>
-      <div className="space-y-4 sm:space-y-5">
-        <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="space-y-5">
+        {/* Header banner — konsisten dengan halaman profile */}
+        <section className="relative overflow-hidden rounded-[24px] bg-[#0072CE] p-5 shadow-sm sm:p-7">
+          <div className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rotate-12 rounded-[28px] bg-[#FFE600]/90" />
+          <div className="pointer-events-none absolute -right-2 top-10 h-20 w-20 rotate-12 rounded-2xl bg-white/10" />
+
+          <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                <Sparkles className="h-3.5 w-3.5 text-[#FFE600]" />
                 Edit Profile
               </div>
 
-              <p className="mt-2 text-sm text-muted-foreground">
+              <h1 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+                {profile.nama}
+              </h1>
+
+              <p className="mt-1 text-sm text-white/80">
                 Perbarui email dan nomor telepon akun peserta.
               </p>
             </div>
 
             <Link
               href="/peserta/profile"
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-2xl border bg-background px-4 text-sm font-medium hover:bg-muted"
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0072CE] shadow-sm transition-all hover:bg-white/90"
             >
               <ArrowLeft className="h-4 w-4" />
               Kembali
@@ -79,116 +88,94 @@ export default async function PesertaEditProfilePage() {
           </div>
         </section>
 
-        <div className="grid gap-4 xl:grid-cols-[0.88fr_1.12fr]">
-          <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
-            <div className="flex flex-col items-center text-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary sm:h-24 sm:w-24">
-                <User2 className="h-8 w-8 sm:h-10 sm:w-10" />
-              </div>
+        <div className="grid gap-5 xl:grid-cols-[0.88fr_1.12fr]">
+          {/* Ringkasan data — read only, tanpa foto */}
+          <section className="rounded-[22px] border border-[#0072CE]/10 bg-card p-5 shadow-sm">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-[#0072CE]">
+              Data Saat Ini
+            </h3>
 
-              <h2 className="mt-4 text-xl font-bold tracking-tight sm:text-2xl">
-                {profile.nama}
-              </h2>
-
-              <p className="mt-1 text-sm text-muted-foreground">
-                Peserta Magang
-              </p>
-
-              <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-600">
-                <BadgeCheck className="h-4 w-4" />
-                {profile.is_active ? "Peserta Aktif" : "Tidak Aktif"}
-              </div>
-            </div>
-
-            <div className="mt-6 space-y-3">
-              <div className="rounded-2xl border bg-muted/20 p-3.5 sm:p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <BriefcaseBusiness className="h-4 w-4" />
-                  </div>
-
-                  <div>
-                    <p className="text-xs text-muted-foreground">Divisi</p>
-                    <p className="text-sm font-semibold">
-                      {profile.division ?? "-"}
-                    </p>
-                  </div>
+            <div className="mt-4 space-y-3">
+              <div className="flex items-center gap-3 rounded-2xl border border-[#0072CE]/10 bg-[#0072CE]/[0.04] p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0072CE] text-white">
+                  <BriefcaseBusiness className="h-4.5 w-4.5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Divisi</p>
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {profile.division ?? "-"}
+                  </p>
                 </div>
               </div>
 
-              <div className="rounded-2xl border bg-muted/20 p-3.5 sm:p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600">
-                    <ShieldCheck className="h-4 w-4" />
-                  </div>
-
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">
-                      Username / NIM
-                    </p>
-                    <p className="mt-1 truncate text-sm font-semibold">
-                      {profile.username}
-                    </p>
-                  </div>
+              <div className="flex items-center gap-3 rounded-2xl border border-[#0072CE]/10 bg-[#0072CE]/[0.04] p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FFE600] text-[#0A2540]">
+                  <ShieldCheck className="h-4.5 w-4.5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">
+                    Username / NIM
+                  </p>
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {profile.username}
+                  </p>
                 </div>
               </div>
 
-              <div className="rounded-2xl border bg-muted/20 p-3.5 sm:p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600">
-                    <Mail className="h-4 w-4" />
-                  </div>
-
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Email</p>
-                    <p className="mt-1 break-all text-sm font-semibold">
-                      {profile.email ?? "-"}
-                    </p>
-                  </div>
+              <div className="flex items-center gap-3 rounded-2xl border border-[#0072CE]/10 bg-[#0072CE]/[0.04] p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0072CE] text-white">
+                  <Mail className="h-4.5 w-4.5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Email</p>
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {profile.email ?? "-"}
+                  </p>
                 </div>
               </div>
 
-              <div className="rounded-2xl border bg-muted/20 p-3.5 sm:p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
-                    <Phone className="h-4 w-4" />
-                  </div>
-
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">
-                      Nomor Telepon
-                    </p>
-                    <p className="mt-1 text-sm font-semibold">
-                      {profile.phone ?? "-"}
-                    </p>
-                  </div>
+              <div className="flex items-center gap-3 rounded-2xl border border-[#0072CE]/10 bg-[#0072CE]/[0.04] p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FFE600] text-[#0A2540]">
+                  <Phone className="h-4.5 w-4.5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">
+                    Nomor Telepon
+                  </p>
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {profile.phone ?? "-"}
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-5 rounded-2xl border bg-primary/[0.04] p-4">
-              <h4 className="text-sm font-semibold text-primary">
-                Informasi
-              </h4>
-
-              <p className="mt-2 text-sm leading-7 text-muted-foreground">
+            <div className="mt-5 flex gap-3 rounded-2xl border-l-4 border-[#FFE600] bg-[#0072CE]/[0.04] p-4">
+              <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0072CE] text-white">
+                <UserRound className="h-3.5 w-3.5" />
+              </div>
+              <p className="text-sm leading-7 text-muted-foreground">
                 Bergabung sejak {formatDate(profile.created_at)}.
               </p>
             </div>
           </section>
 
-          <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
-            <div className="mb-5">
-              <h3 className="text-lg font-semibold tracking-tight sm:text-xl">
-                Update Informasi
-              </h3>
-
-              <p className="mt-1 text-sm text-muted-foreground">
-                Ubah email dan nomor telepon agar data akun tetap terbaru.
-              </p>
+          {/* Form update */}
+          <section className="rounded-[22px] border border-[#0072CE]/10 bg-card p-5 shadow-sm">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold tracking-tight text-foreground">
+                  Update Informasi
+                </h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Ubah email dan nomor telepon agar data akun tetap terbaru.
+                </p>
+              </div>
+              <div className="hidden h-10 w-10 items-center justify-center rounded-xl bg-[#0072CE]/10 text-[#0072CE] sm:flex">
+                <UserRound className="h-5 w-5" />
+              </div>
             </div>
 
-            <div className="rounded-2xl border bg-muted/[0.03] p-4 sm:p-5">
+            <div className="rounded-2xl border border-[#0072CE]/10 bg-[#0072CE]/[0.03] p-4 sm:p-5">
               <EditProfileForm
                 nama={profile.nama}
                 email={profile.email ?? ""}

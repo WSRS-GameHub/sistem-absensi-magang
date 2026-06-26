@@ -28,8 +28,7 @@ type TaskUserRow = {
 };
 
 function formatDate(value: string | null) {
-  if (!value) return "-";
-
+  if (!value) return "—";
   return new Date(value).toLocaleDateString("id-ID", {
     day: "2-digit",
     month: "short",
@@ -43,6 +42,80 @@ function compactTargetLabel(task: TaskRow) {
     return `Divisi ${task.target_division ?? "-"}`;
   return "Individu";
 }
+
+function getStatusBadgeClass(status: TaskUserRow["status"]) {
+  if (status === "in_progress")
+    return "bg-blue-100 text-blue-700 border border-blue-200";
+  if (status === "submitted")
+    return "bg-violet-100 text-violet-700 border border-violet-200";
+  if (status === "selesai")
+    return "bg-emerald-100 text-emerald-700 border border-emerald-200";
+  return "bg-amber-100 text-amber-700 border border-amber-200";
+}
+
+function getStatusLabel(status: TaskUserRow["status"]) {
+  if (status === "in_progress") return "Sedang Dikerjakan";
+  if (status === "submitted") return "Sudah Dikirim";
+  if (status === "selesai") return "Selesai";
+  return "Belum Dimulai";
+}
+
+/* ── Info box: biru gelap (Target) ── */
+function InfoBoxBlue({ label, value, icon }: { label: string; value: string; icon: string }) {
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-[#003B6F] p-4">
+      {/* dekoratif lingkaran */}
+      <div className="pointer-events-none absolute -right-3 -bottom-3 h-14 w-14 rounded-full bg-white/10" />
+      <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">{label}</p>
+      <p className="mt-1.5 text-sm font-bold text-white">{value}</p>
+    </div>
+  );
+}
+
+/* ── Info box: kuning (Deadline) ── */
+function InfoBoxYellow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-[#FFD600] p-4">
+      <div className="pointer-events-none absolute -right-3 -bottom-3 h-14 w-14 rounded-full bg-white/20" />
+      <p className="text-[10px] font-bold uppercase tracking-widest text-[#003B6F]/60">{label}</p>
+      <p className="mt-1.5 text-sm font-bold text-[#003B6F]">{value}</p>
+    </div>
+  );
+}
+
+/* ── Status box ── */
+function StatusBox({
+  label,
+  value,
+  variant,
+}: {
+  label: string;
+  value: string;
+  variant: "blue" | "yellow";
+}) {
+  const cls =
+    variant === "blue"
+      ? "bg-blue-50 border border-blue-100 text-[#003B6F]"
+      : "bg-[#FFFDE7] border border-yellow-200 text-[#003B6F]";
+  const labelCls =
+    variant === "blue" ? "text-blue-400" : "text-amber-500";
+
+  return (
+    <div className={`rounded-2xl p-3 text-center ${cls}`}>
+      <p className={`text-[10px] font-bold uppercase tracking-widest ${labelCls}`}>{label}</p>
+      <p className="mt-1 text-xs font-bold">{value}</p>
+    </div>
+  );
+}
+
+const backLink = (
+  <Link
+    href="/peserta/tugas"
+    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-2xl border border-blue-200 bg-white px-4 text-sm font-semibold text-[#003B6F] shadow-sm transition-colors hover:bg-blue-50"
+  >
+    ← Kembali ke Tugas
+  </Link>
+);
 
 export default async function PesertaTaskDetailPage({
   params,
@@ -70,19 +143,10 @@ export default async function PesertaTaskDetailPage({
             title="Detail Tugas"
             description="Terjadi masalah saat memuat data tugas."
           />
-
-          <div className="rounded-[22px] border bg-card p-4 text-sm text-muted-foreground shadow-sm sm:p-5">
-            Error tugas_user: {taskUserError.message}
+          <div className="rounded-[22px] border border-red-100 bg-red-50/60 p-4 text-sm text-red-600 shadow-sm sm:p-5">
+            Gagal memuat data tugas_user: {taskUserError.message}
           </div>
-
-          <div>
-            <Link
-              href="/peserta/tugas"
-              className="inline-flex h-9 items-center justify-center rounded-2xl border bg-background px-4 text-sm font-medium hover:bg-muted"
-            >
-              ← Kembali ke Tugas
-            </Link>
-          </div>
+          <div>{backLink}</div>
         </div>
       </DashboardLayout>
     );
@@ -96,21 +160,13 @@ export default async function PesertaTaskDetailPage({
             title="Detail Tugas"
             description="Data tugas peserta tidak ditemukan."
           />
-
-          <div className="rounded-[22px] border bg-card p-4 text-sm text-muted-foreground shadow-sm sm:p-5">
-            Tidak ada data <span className="font-medium">tugas_user</span> untuk
-            tugas ini. Berarti relasi <span className="font-medium">tugas_id</span>{" "}
-            dan <span className="font-medium">user_id</span> belum cocok.
+          <div className="rounded-[22px] border border-amber-100 bg-amber-50/60 p-4 text-sm text-amber-700 shadow-sm sm:p-5">
+            Belum ada data <span className="font-semibold">tugas_user</span>{" "}
+            untuk tugas ini. Kemungkinan relasi{" "}
+            <span className="font-semibold">tugas_id</span> dan{" "}
+            <span className="font-semibold">user_id</span> belum cocok.
           </div>
-
-          <div>
-            <Link
-              href="/peserta/tugas"
-              className="inline-flex h-9 items-center justify-center rounded-2xl border bg-background px-4 text-sm font-medium hover:bg-muted"
-            >
-              ← Kembali ke Tugas
-            </Link>
-          </div>
+          <div>{backLink}</div>
         </div>
       </DashboardLayout>
     );
@@ -132,10 +188,10 @@ export default async function PesertaTaskDetailPage({
             title="Detail Tugas"
             description="Terjadi masalah saat memuat data tugas."
           />
-
-          <div className="rounded-[22px] border bg-card p-4 text-sm text-muted-foreground shadow-sm sm:p-5">
-            Error tugas: {taskError.message}
+          <div className="rounded-[22px] border border-red-100 bg-red-50/60 p-4 text-sm text-red-600 shadow-sm sm:p-5">
+            Gagal memuat data tugas: {taskError.message}
           </div>
+          <div>{backLink}</div>
         </div>
       </DashboardLayout>
     );
@@ -149,20 +205,11 @@ export default async function PesertaTaskDetailPage({
             title="Detail Tugas"
             description="Data tugas tidak ditemukan."
           />
-
-          <div className="rounded-[22px] border bg-card p-4 text-sm text-muted-foreground shadow-sm sm:p-5">
-            Baris <span className="font-medium">tugas</span> dengan id{" "}
-            <span className="font-medium">{id}</span> tidak ditemukan.
+          <div className="rounded-[22px] border border-amber-100 bg-amber-50/60 p-4 text-sm text-amber-700 shadow-sm sm:p-5">
+            Tugas dengan id{" "}
+            <span className="font-semibold">{id}</span> tidak ditemukan.
           </div>
-
-          <div>
-            <Link
-              href="/peserta/tugas"
-              className="inline-flex h-9 items-center justify-center rounded-2xl border bg-background px-4 text-sm font-medium hover:bg-muted"
-            >
-              ← Kembali ke Tugas
-            </Link>
-          </div>
+          <div>{backLink}</div>
         </div>
       </DashboardLayout>
     );
@@ -174,97 +221,91 @@ export default async function PesertaTaskDetailPage({
   return (
     <DashboardLayout navigation={pesertaNavigation}>
       <div className="space-y-4 sm:space-y-5">
-        <DashboardPageHeader
-          title="Detail Tugas"
-          description="Kerjakan, submit, dan pantau status tugas kamu."
-        />
 
-        <div>
-          <Link
-            href="/peserta/tugas"
-            className="inline-flex h-9 items-center justify-center rounded-2xl border bg-background px-4 text-sm font-medium hover:bg-muted"
-          >
-            ← Kembali ke Tugas
-          </Link>
-        </div>
+        {/* ── Hero Banner PLN ── */}
+        <section className="relative overflow-hidden rounded-[22px] bg-[#003B6F] p-5 shadow-sm sm:p-6">
+          {/* dekoratif lingkaran kuning */}
+          <div className="pointer-events-none absolute -right-8 -top-8 h-44 w-44 rounded-full bg-[#FFD600]/10" />
+          <div className="pointer-events-none absolute right-16 -bottom-12 h-32 w-32 rounded-full bg-[#FFD600]/5" />
 
-        <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-          <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
-            <div className="flex flex-col gap-4">
-              <div className="space-y-2">
-                <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+          <div className="relative flex flex-col gap-2">
+            {/* badge kuning */}
+            <div className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#FFD600] px-3 py-1 text-xs font-bold tracking-wide text-[#003B6F]">
+              Detail Tugas
+            </div>
+            <p className="text-sm text-blue-100 sm:text-[15px]">
+              Pantau seluruh tugasmu dan progres pengerjaannya di satu tempat.
+            </p>
+          </div>
+        </section>
+
+        <div>{backLink}</div>
+
+        {/* ── Main Card ── */}
+        <section className="rounded-[22px] border border-blue-100 bg-white p-4 shadow-sm sm:p-6">
+          <div className="flex flex-col gap-5">
+
+            {/* Judul + status badge */}
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[#1E88E5]">
                   Judul Tugas
                 </p>
-                <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
-                  {taskRow.title}
-                </h1>
+                <span
+                  className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadgeClass(
+                    taskUserRow.status
+                  )}`}
+                >
+                  {getStatusLabel(taskUserRow.status)}
+                </span>
               </div>
-
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl bg-muted/40 p-3.5 sm:p-4">
-                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                    Target
-                  </p>
-                  <p className="mt-1 text-sm font-medium">
-                    {compactTargetLabel(taskRow)}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl bg-muted/40 p-3.5 sm:p-4">
-                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                    Deadline
-                  </p>
-                  <p className="mt-1 text-sm font-medium">
-                    {formatDate(taskRow.due_date)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-2xl bg-muted/30 p-4 sm:p-5">
-                <p className="text-sm font-medium">Deskripsi</p>
-                <p className="mt-2 whitespace-pre-line text-sm leading-7 text-muted-foreground">
-                  {taskRow.description ?? "-"}
-                </p>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border bg-background p-3.5">
-                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                    Status
-                  </p>
-                  <p className="mt-1 text-sm font-medium">
-                    {taskUserRow.status === "in_progress"
-                      ? "Sedang Dikerjakan"
-                      : taskUserRow.status === "submitted"
-                        ? "Sudah Dikirim"
-                        : taskUserRow.status === "selesai"
-                          ? "Selesai"
-                          : "Belum Dimulai"}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border bg-background p-3.5">
-                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                    Dikirim
-                  </p>
-                  <p className="mt-1 text-sm font-medium">
-                    {formatDate(taskUserRow.submitted_at)}
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border bg-background p-3.5">
-                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                    Selesai
-                  </p>
-                  <p className="mt-1 text-sm font-medium">
-                    {formatDate(taskUserRow.selesai_at)}
-                  </p>
-                </div>
-              </div>
+              <h2 className="text-xl font-bold tracking-tight text-[#003B6F] sm:text-2xl">
+                {taskRow.title}
+              </h2>
             </div>
-          </section>
 
-          <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
+            {/* Target (biru) + Deadline (kuning) */}
+            <div className="grid gap-3 sm:grid-cols-2">
+              <InfoBoxBlue
+                label="Target"
+                value={compactTargetLabel(taskRow)}
+                icon="users"
+              />
+              <InfoBoxYellow
+                label="Deadline"
+                value={formatDate(taskRow.due_date)}
+              />
+            </div>
+
+            {/* Deskripsi */}
+            <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4 sm:p-5">
+              <p className="mb-2 text-sm font-bold text-[#003B6F]">Deskripsi</p>
+              <p className="whitespace-pre-line text-sm leading-7 text-slate-600">
+                {taskRow.description ?? "Belum ada deskripsi untuk tugas ini."}
+              </p>
+            </div>
+
+            {/* Status 3-grid: biru / kuning / biru */}
+            <div className="grid gap-3 sm:grid-cols-3">
+              <StatusBox
+                label="Status"
+                value={getStatusLabel(taskUserRow.status)}
+                variant="blue"
+              />
+              <StatusBox
+                label="Dikirim"
+                value={formatDate(taskUserRow.submitted_at)}
+                variant="yellow"
+              />
+              <StatusBox
+                label="Selesai"
+                value={formatDate(taskUserRow.selesai_at)}
+                variant="blue"
+              />
+            </div>
+
+            <hr className="border-blue-100" />
+
             <TaskDetailClient
               taskId={taskRow.id}
               taskTitle={taskRow.title}
@@ -274,8 +315,9 @@ export default async function PesertaTaskDetailPage({
               selesaiAt={taskUserRow.selesai_at}
               submissionText={taskUserRow.submission_text}
             />
-          </section>
-        </div>
+          </div>
+        </section>
+
       </div>
     </DashboardLayout>
   );

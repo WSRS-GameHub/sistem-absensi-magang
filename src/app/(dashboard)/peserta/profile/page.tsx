@@ -1,20 +1,19 @@
 import Link from "next/link";
 import {
-  BadgeCheck,
   BriefcaseBusiness,
   CalendarDays,
   Edit3,
   Mail,
   Phone,
   ShieldCheck,
-  User2,
+  Sparkles,
+  UserRound,
 } from "lucide-react";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { createClient } from "@/lib/supabase/server";
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { DashboardPageHeader } from "@/components/layout/dashboard-page-header";
 import { pesertaNavigation } from "@/constants/navigation";
 
 type ProfileRow = {
@@ -57,116 +56,126 @@ export default async function PesertaProfilePage() {
 
   return (
     <DashboardLayout navigation={pesertaNavigation}>
-      <div className="space-y-4 sm:space-y-5">
-        <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
-          <div className="flex flex-col gap-2">
-            <div className="inline-flex w-fit items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              Profile Peserta
+      <div className="space-y-5">
+        {/* Header banner — identitas utama, tanpa foto */}
+        <section className="relative overflow-hidden rounded-[24px] bg-[#0072CE] p-5 shadow-sm sm:p-7">
+          {/* aksen kuning diagonal */}
+          <div className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rotate-12 rounded-[28px] bg-[#FFE600]/90" />
+          <div className="pointer-events-none absolute -right-2 top-10 h-20 w-20 rotate-12 rounded-2xl bg-white/10" />
+
+          <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                <Sparkles className="h-3.5 w-3.5 text-[#FFE600]" />
+                Profile Peserta
+              </div>
+
+              <h1 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+                {profile.nama}
+              </h1>
+
+              <p className="mt-1 text-sm text-white/80">
+                Peserta Magang &middot; {profile.division ?? "Belum ada divisi"}
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground sm:text-[15px]">
-              Informasi data diri dan akun peserta magang.
-            </p>
+
+            <div className="flex items-center gap-2">
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${
+                  profile.is_active
+                    ? "bg-[#FFE600] text-[#0A2540]"
+                    : "bg-white/15 text-white"
+                }`}
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    profile.is_active ? "bg-[#0A2540]" : "bg-white/60"
+                  }`}
+                />
+                {profile.is_active ? "Aktif" : "Tidak Aktif"}
+              </span>
+
+              <Link
+                href="/peserta/profile/edit"
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0072CE] shadow-sm transition-all hover:bg-white/90"
+              >
+                <Edit3 className="h-4 w-4" />
+                Edit Profile
+              </Link>
+            </div>
           </div>
         </section>
 
-        <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-          <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
-            <div className="flex flex-col items-center text-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary sm:h-24 sm:w-24">
-                <User2 className="h-8 w-8 sm:h-10 sm:w-10" />
-              </div>
+        <div className="grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
+          {/* Ringkasan keanggotaan */}
+          <section className="rounded-[22px] border border-[#0072CE]/10 bg-card p-5 shadow-sm">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-[#0072CE]">
+              Ringkasan
+            </h3>
 
-              <h2 className="mt-4 text-xl font-bold tracking-tight sm:text-2xl">
-                {profile.nama}
-              </h2>
-
-              <p className="mt-1 text-sm text-muted-foreground">
-                Peserta Magang
-              </p>
-
-              <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-600">
-                <BadgeCheck className="h-4 w-4" />
-                {profile.is_active ? "Peserta Aktif" : "Tidak Aktif"}
-              </div>
-            </div>
-
-            <div className="mt-6 space-y-3">
-              <div className="rounded-2xl border bg-muted/20 p-3.5 sm:p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <BriefcaseBusiness className="h-4 w-4" />
-                  </div>
-
-                  <div>
-                    <p className="text-xs text-muted-foreground">Divisi</p>
-                    <p className="text-sm font-semibold">
-                      {profile.division ?? "-"}
-                    </p>
-                  </div>
+            <div className="mt-4 space-y-3">
+              <div className="flex items-center gap-3 rounded-2xl border border-[#0072CE]/10 bg-[#0072CE]/[0.04] p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0072CE] text-white">
+                  <BriefcaseBusiness className="h-4.5 w-4.5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Divisi</p>
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {profile.division ?? "-"}
+                  </p>
                 </div>
               </div>
 
-              <div className="rounded-2xl border bg-muted/20 p-3.5 sm:p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600">
-                    <ShieldCheck className="h-4 w-4" />
-                  </div>
-
-                  <div>
-                    <p className="text-xs text-muted-foreground">Role</p>
-                    <p className="text-sm font-semibold capitalize">
-                      {profile.role}
-                    </p>
-                  </div>
+              <div className="flex items-center gap-3 rounded-2xl border border-[#0072CE]/10 bg-[#0072CE]/[0.04] p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FFE600] text-[#0A2540]">
+                  <ShieldCheck className="h-4.5 w-4.5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Role</p>
+                  <p className="truncate text-sm font-semibold capitalize text-foreground">
+                    {profile.role}
+                  </p>
                 </div>
               </div>
 
-              <div className="rounded-2xl border bg-muted/20 p-3.5 sm:p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600">
-                    <CalendarDays className="h-4 w-4" />
-                  </div>
-
-                  <div>
-                    <p className="text-xs text-muted-foreground">
-                      Bergabung Sejak
-                    </p>
-                    <p className="text-sm font-semibold">
-                      {formatDate(profile.created_at)}
-                    </p>
-                  </div>
+              <div className="flex items-center gap-3 rounded-2xl border border-[#0072CE]/10 bg-[#0072CE]/[0.04] p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0A2540] text-white">
+                  <CalendarDays className="h-4.5 w-4.5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">
+                    Bergabung Sejak
+                  </p>
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {formatDate(profile.created_at)}
+                  </p>
                 </div>
               </div>
             </div>
           </section>
 
-          <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          {/* Informasi akun */}
+          <section className="rounded-[22px] border border-[#0072CE]/10 bg-card p-5 shadow-sm">
+            <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold tracking-tight sm:text-xl">
+                <h3 className="text-lg font-semibold tracking-tight text-foreground">
                   Informasi Akun
                 </h3>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Detail akun peserta magang.
                 </p>
               </div>
-
-              <Link
-                href="/peserta/profile/edit"
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-2xl bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-95"
-              >
-                <Edit3 className="h-4 w-4" />
-                Edit Profile
-              </Link>
+              <div className="hidden h-10 w-10 items-center justify-center rounded-xl bg-[#0072CE]/10 text-[#0072CE] sm:flex">
+                <UserRound className="h-5 w-5" />
+              </div>
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border bg-muted/20 p-4">
+              <div className="rounded-2xl border border-border bg-muted/20 p-4 transition-colors hover:border-[#0072CE]/30">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <User2 className="h-4 w-4" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0072CE]/10 text-[#0072CE]">
+                    <UserRound className="h-4 w-4" />
                   </div>
-
                   <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">
                       Nama Lengkap
@@ -178,12 +187,11 @@ export default async function PesertaProfilePage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border bg-muted/20 p-4">
+              <div className="rounded-2xl border border-border bg-muted/20 p-4 transition-colors hover:border-[#0072CE]/30">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0072CE]/10 text-[#0072CE]">
                     <ShieldCheck className="h-4 w-4" />
                   </div>
-
                   <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">
                       Username / NIM
@@ -195,12 +203,11 @@ export default async function PesertaProfilePage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border bg-muted/20 p-4">
+              <div className="rounded-2xl border border-border bg-muted/20 p-4 transition-colors hover:border-[#0072CE]/30">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0072CE]/10 text-[#0072CE]">
                     <Mail className="h-4 w-4" />
                   </div>
-
                   <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">Email</p>
                     <p className="mt-1 truncate text-sm font-semibold">
@@ -210,12 +217,11 @@ export default async function PesertaProfilePage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border bg-muted/20 p-4">
+              <div className="rounded-2xl border border-border bg-muted/20 p-4 transition-colors hover:border-[#0072CE]/30">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0072CE]/10 text-[#0072CE]">
                     <Phone className="h-4 w-4" />
                   </div>
-
                   <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">
                       Nomor Telepon
@@ -228,9 +234,11 @@ export default async function PesertaProfilePage() {
               </div>
             </div>
 
-            <div className="mt-5 rounded-2xl border bg-primary/[0.04] p-4">
-              <h4 className="text-sm font-semibold text-primary">Informasi</h4>
-              <p className="mt-2 text-sm leading-7 text-muted-foreground">
+            <div className="mt-5 flex gap-3 rounded-2xl border-l-4 border-[#FFE600] bg-[#0072CE]/[0.04] p-4">
+              <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0072CE] text-white">
+                <Sparkles className="h-3.5 w-3.5" />
+              </div>
+              <p className="text-sm leading-7 text-muted-foreground">
                 Halaman ini menampilkan informasi akun peserta magang pada
                 Aplikasi Tugas dan Absensi Peserta Magang Berbasis Web pada PT
                 PLN (Persero) ULP Rivai Palembang.

@@ -72,100 +72,102 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-muted/30">
-      <div className="grid min-h-screen lg:grid-cols-2">
-        {/* LEFT SIDE */}
-        <div className="hidden border-r bg-background lg:flex">
-          <div className="flex w-full flex-col justify-between p-10">
+    <main className="h-screen overflow-hidden bg-white">
+      <div className="grid h-full lg:grid-cols-2">
+        {/* LEFT SIDE — putih dominan, aksen biru & kuning */}
+        <div className="relative hidden overflow-hidden border-r border-[#0072CE]/10 bg-white lg:flex">
+          {/* aksen kuning kecil di pojok */}
+          <div className="pointer-events-none absolute -left-8 -top-10 h-32 w-32 rotate-12 rounded-[24px] bg-[#FFE600]/80" />
+          <div className="pointer-events-none absolute bottom-10 right-0 h-40 w-40 translate-x-1/2 rounded-full bg-[#0072CE]/[0.06]" />
+
+          <div className="relative z-10 flex w-full flex-col justify-between p-8">
             <div>
-              <div className="inline-flex items-center gap-3 rounded-2xl border bg-card px-4 py-3 shadow-sm">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10">
-                  <Building2 className="h-5 w-5 text-primary" />
+              <div className="inline-flex items-center gap-3 rounded-2xl border border-[#0072CE]/10 bg-white px-4 py-2.5 shadow-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0072CE]">
+                  <Building2 className="h-5 w-5 text-white" />
                 </div>
 
                 <div>
-                  <p className="text-sm font-semibold tracking-tight">
+                  <p className="text-sm font-semibold tracking-tight text-foreground">
                     PT PLN (Persero) ULP Rivai
                   </p>
-
                   <p className="text-xs text-muted-foreground">
                     Aplikasi Tugas & Absensi Peserta Magang
                   </p>
                 </div>
               </div>
 
-              <div className="mt-16 max-w-xl">
-                <div className="inline-flex items-center gap-2 rounded-full border bg-background px-4 py-2 text-xs font-medium shadow-sm">
-                  <Sparkles className="h-4 w-4 text-primary" />
+              <div className="mt-10 max-w-lg">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#0072CE]/10 bg-[#0072CE]/[0.04] px-3.5 py-1.5 text-xs font-medium text-[#0072CE]">
+                  <Sparkles className="h-3.5 w-3.5 text-[#FFE600]" />
                   Sistem Monitoring Peserta Magang
                 </div>
 
-                <h1 className="mt-6 text-5xl font-bold leading-tight tracking-tight">
-                  Aplikasi Tugas dan Absensi Peserta Magang Berbasis Web
+                <h1 className="mt-5 text-[2.1rem] font-bold leading-[1.15] tracking-tight text-foreground">
+                  Aplikasi Tugas dan Absensi{" "}
+                  <span className="text-[#0072CE]">Peserta Magang</span>{" "}
+                  Berbasis Web
                 </h1>
 
-                <p className="mt-6 text-base leading-8 text-muted-foreground">
-                  Platform monitoring peserta magang berbasis web pada
-                  PT PLN (Persero) ULP Rivai Palembang yang mendukung
-                  absensi lokasi, tugas peserta, pengumuman, dan monitoring aktivitas magang.
+                <p className="mt-4 text-sm leading-7 text-muted-foreground">
+                  Platform monitoring peserta magang berbasis web pada PT PLN
+                  (Persero) ULP Rivai Palembang yang mendukung absensi
+                  lokasi, tugas peserta, pengumuman, dan monitoring aktivitas
+                  magang.
                 </p>
               </div>
 
-              <div className="mt-12 grid gap-4">
-                <div className="flex items-start gap-4 rounded-3xl border bg-card p-5 shadow-sm">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
-                    <ShieldCheck className="h-5 w-5 text-primary" />
+              <div className="mt-8 grid gap-3">
+                <div className="flex items-start gap-3.5 rounded-2xl border border-[#0072CE]/10 bg-white p-4 shadow-sm">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0072CE]/10">
+                    <ShieldCheck className="h-4.5 w-4.5 text-[#0072CE]" />
                   </div>
-
                   <div>
-                    <h3 className="font-semibold tracking-tight">
+                    <h3 className="text-sm font-semibold tracking-tight text-foreground">
                       Login Sistem Magang
                     </h3>
-
-                    <p className="mt-1 text-sm leading-7 text-muted-foreground">
-                      Login aman dengan role-based access control dan first login protection.
+                    <p className="mt-0.5 text-xs leading-6 text-muted-foreground">
+                      Login aman dengan role-based access control dan first
+                      login protection.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4 rounded-3xl border bg-card p-5 shadow-sm">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
-                    <Building2 className="h-5 w-5 text-primary" />
+                <div className="flex items-start gap-3.5 rounded-2xl border border-[#0072CE]/10 bg-white p-4 shadow-sm">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FFE600]/20">
+                    <Building2 className="h-4.5 w-4.5 text-[#0A2540]" />
                   </div>
-
                   <div>
-                    <h3 className="font-semibold tracking-tight">
+                    <h3 className="text-sm font-semibold tracking-tight text-foreground">
                       Monitoring Aktivitas Magang
                     </h3>
-
-                    <p className="mt-1 text-sm leading-7 text-muted-foreground">
-                      Pantau absensi, tugas, dan aktivitas peserta magang dalam satu sistem terintegrasi.
+                    <p className="mt-0.5 text-xs leading-6 text-muted-foreground">
+                      Pantau absensi, tugas, dan aktivitas peserta magang
+                      dalam satu sistem terintegrasi.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="border-t pt-6 text-sm text-muted-foreground">
+            <div className="border-t border-[#0072CE]/10 pt-4 text-xs text-muted-foreground">
               © 2026 PT PLN (Persero) ULP Rivai Palembang
             </div>
           </div>
         </div>
 
         {/* RIGHT SIDE */}
-        <div className="flex items-center justify-center px-6 py-10">
+        <div className="flex h-full items-center justify-center overflow-hidden bg-white px-6 py-6">
           <div className="w-full max-w-md">
             {/* MOBILE HEADER */}
-            <div className="mb-8 flex items-center gap-3 lg:hidden">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
-                <Building2 className="h-5 w-5 text-primary" />
+            <div className="mb-5 flex items-center gap-3 lg:hidden">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#0072CE]">
+                <Building2 className="h-5 w-5 text-white" />
               </div>
-
               <div>
-                <h2 className="font-semibold tracking-tight">
+                <h2 className="text-sm font-semibold tracking-tight text-foreground">
                   PT PLN (Persero) ULP Rivai
                 </h2>
-
                 <p className="text-xs text-muted-foreground">
                   Aplikasi peserta magang
                 </p>
@@ -173,52 +175,53 @@ export default function LoginPage() {
             </div>
 
             {/* LOGIN CARD */}
-            <div className="rounded-[36px] border bg-card shadow-sm">
-              <div className="p-8">
+            <div className="rounded-[30px] border border-[#0072CE]/10 bg-white shadow-sm">
+              <div className="p-6 sm:p-7">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                    <div className="inline-flex items-center gap-1.5 rounded-full bg-[#FFE600]/25 px-3 py-1 text-xs font-medium text-[#0A2540]">
+                      <ShieldCheck className="h-3.5 w-3.5" />
                       Secure Login
                     </div>
 
-                    <h2 className="mt-4 text-3xl font-bold tracking-tight">
+                    <h2 className="mt-3 text-2xl font-bold tracking-tight text-foreground sm:text-[1.7rem]">
                       Login Peserta Magang
                     </h2>
 
-                    <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                    <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
                       Masuk menggunakan username dan password
                     </p>
                   </div>
 
-                  <div className="hidden h-14 w-14 items-center justify-center rounded-3xl bg-primary/10 sm:flex">
-                    <ShieldCheck className="h-6 w-6 text-primary" />
+                  <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#0072CE] sm:flex">
+                    <ShieldCheck className="h-5 w-5 text-white" />
                   </div>
                 </div>
 
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
-                  className="mt-8 space-y-5"
+                  className="mt-6 space-y-4"
                 >
                   <div>
-                    <label className="mb-2 block text-sm font-medium">
+                    <label className="mb-1.5 block text-sm font-medium text-foreground">
                       Username
                     </label>
 
                     <input
                       {...form.register("username")}
-                      className="h-12 w-full rounded-2xl border bg-background px-4 text-sm outline-none transition-all focus:border-primary/30 focus:ring-4 focus:ring-primary/10"
+                      className="h-11 w-full rounded-xl border border-[#0072CE]/15 bg-white px-4 text-sm outline-none transition-all focus:border-[#0072CE]/40 focus:ring-4 focus:ring-[#0072CE]/10"
                       placeholder="Masukkan username"
                     />
 
                     {form.formState.errors.username ? (
-                      <p className="mt-2 text-sm text-red-500">
+                      <p className="mt-1.5 text-sm text-red-500">
                         {form.formState.errors.username.message}
                       </p>
                     ) : null}
                   </div>
 
                   <div>
-                    <label className="mb-2 block text-sm font-medium">
+                    <label className="mb-1.5 block text-sm font-medium text-foreground">
                       Password
                     </label>
 
@@ -226,16 +229,14 @@ export default function LoginPage() {
                       <input
                         type={showPassword ? "text" : "password"}
                         {...form.register("password")}
-                        className="h-12 w-full rounded-2xl border bg-background px-4 pr-12 text-sm outline-none transition-all focus:border-primary/30 focus:ring-4 focus:ring-primary/10"
+                        className="h-11 w-full rounded-xl border border-[#0072CE]/15 bg-white px-4 pr-12 text-sm outline-none transition-all focus:border-[#0072CE]/40 focus:ring-4 focus:ring-[#0072CE]/10"
                         placeholder="Masukkan password"
                       />
 
                       <button
                         type="button"
-                        onClick={() =>
-                          setShowPassword((prev) => !prev)
-                        }
-                        className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-[#0072CE]"
                       >
                         {showPassword ? (
                           <EyeOff className="h-5 w-5" />
@@ -246,7 +247,7 @@ export default function LoginPage() {
                     </div>
 
                     {form.formState.errors.password ? (
-                      <p className="mt-2 text-sm text-red-500">
+                      <p className="mt-1.5 text-sm text-red-500">
                         {form.formState.errors.password.message}
                       </p>
                     ) : null}
@@ -255,14 +256,14 @@ export default function LoginPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-primary px-4 font-medium text-primary-foreground shadow-sm transition-all hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-[#0072CE] px-4 font-medium text-white shadow-sm transition-all hover:bg-[#005fab] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {loading ? "Memproses..." : "Login"}
                   </button>
                 </form>
 
-                <div className="mt-8 rounded-3xl border bg-muted/30 p-4">
-                  <p className="text-xs leading-6 text-muted-foreground">
+                <div className="mt-5 flex gap-2.5 rounded-2xl border-l-4 border-[#FFE600] bg-[#0072CE]/[0.04] p-3.5">
+                  <p className="text-xs leading-5 text-muted-foreground">
                     Jika ini pertama kali login, Anda akan diminta mengganti
                     password sebelum masuk ke dashboard sistem.
                   </p>
@@ -270,7 +271,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="mt-6 text-center text-xs text-muted-foreground lg:hidden">
+            <div className="mt-4 text-center text-xs text-muted-foreground lg:hidden">
               © 2026 PT PLN (Persero) ULP Rivai Palembang
             </div>
           </div>
