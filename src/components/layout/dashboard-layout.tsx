@@ -52,7 +52,7 @@ export function DashboardLayout({
   return (
     <div className="min-h-[100dvh] bg-[#F4F9FF] md:flex md:h-screen md:overflow-hidden">
       <DashboardSidebar
-        title="Aplikasi Peserta Magang"
+        title="SIATAMA"
         navigation={navigation}
         mobileOpen={mobileOpen}
         onCloseMobile={() => setMobileOpen(false)}

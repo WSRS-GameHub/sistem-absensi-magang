@@ -18,37 +18,37 @@ export function DashboardTopbar({
   onMenuClick,
 }: DashboardTopbarProps) {
   return (
-    <header className="sticky top-0 z-40 border-b border-[#E5DC00] bg-[#FFFA40] shadow-md">
-      <div className="px-3 py-3 sm:px-4 sm:py-4 md:px-5 lg:px-6 xl:px-8">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-start gap-2 sm:gap-3">
+    <header className="sticky top-0 z-40 border-b border-[#E5BC2E] bg-[#FFD453] shadow-sm">
+      <div className="px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 lg:px-6 xl:px-8">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <button
               type="button"
               onClick={onMenuClick}
               aria-label="Buka menu"
-              className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#E5DC00] bg-white shadow-sm transition-all duration-200 hover:bg-yellow-100 md:hidden"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#E5BC2E] bg-white shadow-sm transition-all duration-200 hover:bg-yellow-100 md:hidden"
             >
-              <Menu className="h-4 w-4 text-[#0072CE] sm:h-5 sm:w-5" />
+              <Menu className="h-4 w-4 text-[#0072CE]" />
             </button>
 
             <div className="min-w-0">
-              <h1 className="truncate text-lg font-bold tracking-tight text-gray-900 sm:text-xl md:text-2xl">
+              <h1 className="truncate text-lg font-bold leading-none tracking-tight text-gray-900 md:text-xl">
                 {title}
               </h1>
 
-              <p className="mt-0.5 truncate text-xs text-gray-700 sm:text-sm">
+              <p className="mt-0.5 truncate text-xs text-gray-700">
                 Hai, {name} 👋
               </p>
 
               {badgeLabel ? (
-                <div className="mt-2 inline-flex max-w-full items-center rounded-full bg-[#0072CE] px-3 py-1 text-[11px] font-semibold text-white shadow-sm sm:text-xs">
+                <div className="mt-1 inline-flex max-w-full items-center rounded-full bg-[#0072CE] px-2 py-[2px] text-[10px] font-semibold text-white shadow-sm">
                   <span className="truncate">{badgeLabel}</span>
                 </div>
               ) : null}
             </div>
           </div>
 
-          <div className="flex items-center gap-2 rounded-xl border border-[#E5DC00] bg-white px-2 py-1 shadow-sm">
+          <div className="flex items-center rounded-lg border border-[#E5BC2E] bg-white p-0.5 shadow-sm">
             <ThemeToggle />
           </div>
         </div>

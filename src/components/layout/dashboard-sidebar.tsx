@@ -123,7 +123,7 @@ export function DashboardSidebar({
         )}
       >
         {/* HEADER */}
-        <div className="flex items-center justify-between border-b border-blue-700 px-4 py-4">
+        <div className="flex items-center justify-between border-b border-blue-700 px-4 py-3">
           <div className="flex items-center gap-3">
             <BrandMark />
 
@@ -159,9 +159,9 @@ export function DashboardSidebar({
         <div className="border-t border-border/30 p-3">
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-white hover:bg-white/15 hover:text-white transition-all"
+            className="group flex w-full items-center justify-center gap-3 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-white hover:text-[#0072CE]"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
             <span>Logout</span>
           </button>
         </div>
@@ -170,14 +170,14 @@ export function DashboardSidebar({
       {/* DESKTOP */}
       <aside className="hidden w-[240px] shrink-0 flex-col border-r border-blue-700 bg-[#0072CE] backdrop-blur-xl md:sticky md:top-0 md:flex md:h-screen">
         {/* HEADER */}
-        <div className="border-b border-blue-700 px-5 py-5">
-          <div className="flex items-center gap-3">
-            <BrandMark />
-
+            <div className="border-b border-blue-700 px-5 py-6">
+            <div className="flex flex-col items-center justify-center">
+              <BrandMark />
             <div className="min-w-0">
-              <h1 className="truncate text-base font-semibold tracking-tight text-white">
+              <h1 className="mt-3 text-center text-2xl font-bold tracking-wide text-white">
                 {title}
               </h1>
+
             </div>
           </div>
         </div>
@@ -191,9 +191,9 @@ export function DashboardSidebar({
         <div className="border-t border-blue-700 p-4">
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white hover:bg-white/15 hover:text-white transition-all"
+            className="group flex w-full items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-[13px] font-semibold text-white transition-all duration-200 hover:bg-white hover:text-[#0072CE] hover:shadow-lg active:scale-[0.98]"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
             <span>Logout</span>
           </button>
         </div>
