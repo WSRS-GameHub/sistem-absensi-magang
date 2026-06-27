@@ -88,10 +88,10 @@ export default function LoginPage() {
                 </div>
 
                 <div>
-                  <p className="text-sm font-semibold tracking-tight text-foreground">
+                  <p className="text-sm font-semibold tracking-tight text-slate-900">
                     PT PLN (Persero) ULP Rivai
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-slate-500">
                     Aplikasi Tugas & Absensi Peserta Magang
                   </p>
                 </div>
@@ -103,13 +103,13 @@ export default function LoginPage() {
                   Sistem Monitoring Peserta Magang
                 </div>
 
-                <h1 className="mt-5 text-[2.1rem] font-bold leading-[1.15] tracking-tight text-foreground">
+                <h1 className="mt-5 text-[2.1rem] font-bold leading-[1.15] tracking-tight text-slate-900">
                   Aplikasi Tugas dan Absensi{" "}
                   <span className="text-[#0072CE]">Peserta Magang</span>{" "}
                   Berbasis Web
                 </h1>
 
-                <p className="mt-4 text-sm leading-7 text-muted-foreground">
+                <p className="mt-4 text-sm leading-7 text-slate-500">
                   Platform monitoring peserta magang berbasis web pada PT PLN
                   (Persero) ULP Rivai Palembang yang mendukung absensi
                   lokasi, tugas peserta, pengumuman, dan monitoring aktivitas
@@ -123,10 +123,10 @@ export default function LoginPage() {
                     <ShieldCheck className="h-4.5 w-4.5 text-[#0072CE]" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold tracking-tight text-foreground">
+                    <h3 className="text-sm font-semibold tracking-tight text-slate-900">
                       Login Sistem Magang
                     </h3>
-                    <p className="mt-0.5 text-xs leading-6 text-muted-foreground">
+                    <p className="mt-0.5 text-xs leading-6 text-slate-500">
                       Login aman dengan role-based access control dan first
                       login protection.
                     </p>
@@ -138,10 +138,10 @@ export default function LoginPage() {
                     <Building2 className="h-4.5 w-4.5 text-[#0A2540]" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold tracking-tight text-foreground">
+                    <h3 className="text-sm font-semibold tracking-tight text-slate-900">
                       Monitoring Aktivitas Magang
                     </h3>
-                    <p className="mt-0.5 text-xs leading-6 text-muted-foreground">
+                    <p className="mt-0.5 text-xs leading-6 text-slate-500">
                       Pantau absensi, tugas, dan aktivitas peserta magang
                       dalam satu sistem terintegrasi.
                     </p>
@@ -150,7 +150,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="border-t border-[#0072CE]/10 pt-4 text-xs text-muted-foreground">
+            <div className="border-t border-[#0072CE]/10 pt-4 text-xs text-slate-500">
               © 2026 PT PLN (Persero) ULP Rivai Palembang
             </div>
           </div>
@@ -165,10 +165,10 @@ export default function LoginPage() {
                 <Building2 className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold tracking-tight text-foreground">
+                <h2 className="text-sm font-semibold tracking-tight text-slate-900">
                   PT PLN (Persero) ULP Rivai
                 </h2>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-slate-500">
                   Aplikasi peserta magang
                 </p>
               </div>
@@ -184,11 +184,11 @@ export default function LoginPage() {
                       Secure Login
                     </div>
 
-                    <h2 className="mt-3 text-2xl font-bold tracking-tight text-foreground sm:text-[1.7rem]">
+                    <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-[1.7rem]">
                       Login Peserta Magang
                     </h2>
 
-                    <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
+                    <p className="mt-1.5 text-sm leading-6 text-slate-500">
                       Masuk menggunakan username dan password
                     </p>
                   </div>
@@ -203,13 +203,13 @@ export default function LoginPage() {
                   className="mt-6 space-y-4"
                 >
                   <div>
-                    <label className="mb-1.5 block text-sm font-medium text-foreground">
+                    <label className="mb-1.5 block text-sm font-medium text-slate-900">
                       Username
                     </label>
 
                     <input
                       {...form.register("username")}
-                      className="h-11 w-full rounded-xl border border-[#0072CE]/15 bg-white px-4 text-sm outline-none transition-all focus:border-[#0072CE]/40 focus:ring-4 focus:ring-[#0072CE]/10"
+                      className="h-11 w-full rounded-xl border border-[#0072CE]/15 bg-white px-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-[#0072CE]/40 focus:ring-4 focus:ring-[#0072CE]/10"
                       placeholder="Masukkan username"
                     />
 
@@ -221,7 +221,7 @@ export default function LoginPage() {
                   </div>
 
                   <div>
-                    <label className="mb-1.5 block text-sm font-medium text-foreground">
+                    <label className="mb-1.5 block text-sm font-medium text-slate-900">
                       Password
                     </label>
 
@@ -229,14 +229,14 @@ export default function LoginPage() {
                       <input
                         type={showPassword ? "text" : "password"}
                         {...form.register("password")}
-                        className="h-11 w-full rounded-xl border border-[#0072CE]/15 bg-white px-4 pr-12 text-sm outline-none transition-all focus:border-[#0072CE]/40 focus:ring-4 focus:ring-[#0072CE]/10"
+                        className="h-11 w-full rounded-xl border border-[#0072CE]/15 bg-white px-4 pr-12 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-[#0072CE]/40 focus:ring-4 focus:ring-[#0072CE]/10"
                         placeholder="Masukkan password"
                       />
 
                       <button
                         type="button"
                         onClick={() => setShowPassword((prev) => !prev)}
-                        className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-[#0072CE]"
+                        className="absolute inset-y-0 right-3 flex items-center text-slate-500 hover:text-[#0072CE]"
                       >
                         {showPassword ? (
                           <EyeOff className="h-5 w-5" />
@@ -263,7 +263,7 @@ export default function LoginPage() {
                 </form>
 
                 <div className="mt-5 flex gap-2.5 rounded-2xl border-l-4 border-[#FFE600] bg-[#0072CE]/[0.04] p-3.5">
-                  <p className="text-xs leading-5 text-muted-foreground">
+                  <p className="text-xs leading-5 text-slate-500">
                     Jika ini pertama kali login, Anda akan diminta mengganti
                     password sebelum masuk ke dashboard sistem.
                   </p>
@@ -271,7 +271,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="mt-4 text-center text-xs text-muted-foreground lg:hidden">
+            <div className="mt-4 text-center text-xs text-slate-500 lg:hidden">
               © 2026 PT PLN (Persero) ULP Rivai Palembang
             </div>
           </div>
