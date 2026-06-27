@@ -2,237 +2,282 @@ import Link from "next/link";
 import { type ComponentType } from "react";
 import {
   ArrowUpRight,
-  BarChart3,
+  Activity,
   BellRing,
   CalendarCheck2,
   ClipboardList,
+  LayoutGrid,
   Users,
 } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { DashboardPageHeader } from "@/components/layout/dashboard-page-header";
 import { adminNavigation } from "@/constants/navigation";
 import { getCurrentProfile } from "@/lib/auth/get-current-profile";
 import { createAdminClient } from "@/lib/supabase/admin";
+
+/* ─── Token colours ─────────────────────────────────────────── */
+const B = "#0072CE";
+const B_DARK = "#005BAA";
+const B_LIGHT = "#E6F3FF";
+const B_MID = "#CCE4F7";
+const Y = "#FFE600";
+const Y_DARK = "#CDB800";
+const Y_TEXT = "#5C4A00";
+
+/* ─── Stat card ─────────────────────────────────────────────── */
+type Accent = "blue" | "green" | "purple" | "yellow";
 
 type StatCardProps = {
   title: string;
   value: string;
   note: string;
-  icon: ComponentType<{ className?: string }>;
-  tone: string;
+  icon: ComponentType<{ size?: number; color?: string }>;
+  accent: Accent;
   href: string;
 };
 
-function StatCard({
-  title,
-  value,
-  note,
-  icon: Icon,
-  tone,
-  href,
-}: StatCardProps) {
+const accentMap: Record<
+  Accent,
+  { bar: string; iconBg: string; iconColor: string }
+> = {
+  blue:   { bar: B,        iconBg: "#E6F1FB", iconColor: B },
+  green:  { bar: "#10B981", iconBg: "#ECFDF5", iconColor: "#059669" },
+  purple: { bar: "#8B5CF6", iconBg: "#F3EEFE", iconColor: "#7C3AED" },
+  yellow: { bar: Y_DARK,   iconBg: "#FFFBE6", iconColor: "#A16207" },
+};
+
+function StatCard({ title, value, note, icon: Icon, accent, href }: StatCardProps) {
+  const { bar, iconBg, iconColor } = accentMap[accent];
   return (
     <Link
       href={href}
-      className="rounded-[20px] border bg-card p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+      className="group relative overflow-hidden rounded-[20px] bg-white border border-transparent hover:border-[#CCE4F7] p-4 transition-all hover:-translate-y-0.5 hover:shadow-md"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-xs text-muted-foreground">{title}</p>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight">{value}</h2>
-          <p className="mt-1 text-xs text-muted-foreground">{note}</p>
+      {/* left accent bar */}
+      <span
+        className="absolute left-0 top-0 h-full w-1 rounded-l-[4px]"
+        style={{ background: bar }}
+      />
+      <div className="pl-2">
+        <div className="flex items-start justify-between">
+          <p
+            className="text-[11px] font-semibold uppercase tracking-wider"
+            style={{ color: "#5A6B7A" }}
+          >
+            {title}
+          </p>
+          <span
+            className="flex h-[34px] w-[34px] items-center justify-center rounded-[10px]"
+            style={{ background: iconBg }}
+          >
+            <Icon size={16} color={iconColor} />
+          </span>
         </div>
-
-        <div className={`rounded-2xl p-2.5 ${tone}`}>
-          <Icon className="h-4 w-4" />
-        </div>
+        <h2 className="mt-2 text-[26px] font-semibold tracking-tight text-[#1A1A2E]">
+          {value}
+        </h2>
+        <p className="mt-0.5 text-[11px]" style={{ color: "#8FA0AF" }}>
+          {note}
+        </p>
       </div>
     </Link>
   );
 }
 
+/* ─── Quick link ─────────────────────────────────────────────── */
+function QuickLink({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-center justify-between rounded-[10px] border border-[#CCE4F7] bg-[#E6F3FF] px-[14px] py-2 text-[13px] font-medium text-[#1A1A2E] transition-colors hover:bg-[#0072CE] hover:border-[#0072CE] hover:text-white"
+    >
+      <span>{label}</span>
+      <ArrowUpRight
+        size={14}
+        className="text-[#0072CE] group-hover:text-[#FFE600] transition-colors"
+      />
+    </Link>
+  );
+}
+
+/* ─── Status row ─────────────────────────────────────────────── */
+function StatusRow({
+  label,
+  status,
+  ok,
+}: {
+  label: string;
+  status: string;
+  ok: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between rounded-[10px] bg-[#F7FAFD] px-4 py-2.5">
+      <span className="flex items-center gap-2 text-[13px] text-[#5A6B7A]">
+        <span
+          className="inline-block h-2 w-2 rounded-full"
+          style={{ background: ok ? "#10B981" : "#D97706" }}
+        />
+        {label}
+      </span>
+      <span
+        className="text-[13px] font-semibold"
+        style={{ color: ok ? "#059669" : "#D97706" }}
+      >
+        {status}
+      </span>
+    </div>
+  );
+}
+
+/* ─── Page ───────────────────────────────────────────────────── */
 export default async function AdminDashboardPage() {
   const profile = await getCurrentProfile();
-
-  if (!profile) {
-    redirect("/login");
-  }
+  if (!profile) redirect("/login");
 
   const supabase = createAdminClient();
   const today = new Date().toISOString().slice(0, 10);
 
-  const [
-    totalPesertaRes,
-    absensiHariIniRes,
-    tugasRes,
-    pengumumanRes,
-  ] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("id", { count: "exact", head: true })
-      .eq("role", "peserta"),
-
-    supabase
-      .from("absensi")
-      .select("id", { count: "exact", head: true })
-      .eq("tanggal", today),
-
-    supabase
-      .from("tugas")
-      .select("id", { count: "exact", head: true }),
-
-    supabase
-      .from("pengumuman")
-      .select("id", { count: "exact", head: true }),
-  ]);
-
-  const totalPeserta = totalPesertaRes.count ?? 0;
-  const absensiHariIni = absensiHariIniRes.count ?? 0;
-  const totalTugas = tugasRes.count ?? 0;
-  const totalPengumuman = pengumumanRes.count ?? 0;
+  const [totalPesertaRes, absensiHariIniRes, tugasRes, pengumumanRes] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("role", "peserta"),
+      supabase
+        .from("absensi")
+        .select("id", { count: "exact", head: true })
+        .eq("tanggal", today),
+      supabase.from("tugas").select("id", { count: "exact", head: true }),
+      supabase
+        .from("pengumuman")
+        .select("id", { count: "exact", head: true }),
+    ]);
 
   const stats: StatCardProps[] = [
     {
       title: "Total Peserta",
-      value: String(totalPeserta),
+      value: String(totalPesertaRes.count ?? 0),
       note: "Data peserta aktif",
       icon: Users,
-      tone: "bg-blue-500/10 text-blue-600",
+      accent: "blue",
       href: "/admin/users",
     },
     {
       title: "Absensi Hari Ini",
-      value: String(absensiHariIni),
+      value: String(absensiHariIniRes.count ?? 0),
       note: "Rekap check-in",
       icon: CalendarCheck2,
-      tone: "bg-emerald-500/10 text-emerald-600",
+      accent: "green",
       href: "/admin/absensi",
     },
     {
       title: "Tugas",
-      value: String(totalTugas),
+      value: String(tugasRes.count ?? 0),
       note: "Tugas yang terdata",
       icon: ClipboardList,
-      tone: "bg-violet-500/10 text-violet-600",
+      accent: "purple",
       href: "/admin/tugas",
     },
     {
       title: "Pengumuman",
-      value: String(totalPengumuman),
+      value: String(pengumumanRes.count ?? 0),
       note: "Informasi sistem",
       icon: BellRing,
-      tone: "bg-amber-500/10 text-amber-600",
+      accent: "yellow",
       href: "/admin/pengumuman",
     },
   ];
 
   return (
     <DashboardLayout navigation={adminNavigation}>
-      <div className="space-y-4 sm:space-y-5">
-        <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
-          <div>
-            <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              Dashboard Admin
-            </div>
+      <div className="space-y-4 p-1">
 
-            <p className="mt-2 text-sm text-muted-foreground sm:text-[15px]">
+        {/* ── Hero banner ── */}
+        <section
+          className="flex items-center justify-between rounded-[20px] p-5"
+          style={{ background: B }}
+        >
+          <div>
+            <span
+              className="inline-block rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider"
+              style={{ background: Y, color: Y_TEXT }}
+            >
+              Dashboard Admin
+            </span>
+            <h1 className="mt-2 text-[22px] font-semibold text-white tracking-tight">
+              Selamat datang kembali 👋
+            </h1>
+            <p className="mt-1 text-[13px] text-white/70">
               Ringkasan singkat untuk monitoring sistem.
             </p>
           </div>
+          <div
+            className="flex items-center justify-center rounded-[14px] p-3.5"
+            style={{ background: "rgba(255,255,255,0.12)" }}
+          >
+            <LayoutGrid size={28} color={Y} />
+          </div>
         </section>
 
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {stats.map((item) => (
-            <StatCard key={item.title} {...item} />
+        {/* ── Stat cards ── */}
+        <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+          {stats.map((s) => (
+            <StatCard key={s.title} {...s} />
           ))}
         </section>
 
+        {/* ── Bottom row ── */}
         <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-          <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
-            <div className="flex items-center justify-between gap-3">
+
+          {/* Quick access */}
+          <section className="rounded-[20px] bg-white p-5">
+            <div className="flex items-start justify-between">
               <div>
-                <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                <span
+                  className="inline-block rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider"
+                  style={{ background: B_LIGHT, color: B }}
+                >
                   Ringkas
-                </div>
-                <h3 className="mt-3 text-base font-semibold tracking-tight sm:text-lg">
+                </span>
+                <h3 className="mt-2 text-[15px] font-semibold text-[#1A1A2E]">
                   Akses Cepat
                 </h3>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-0.5 text-[12px] text-[#5A6B7A]">
                   Langsung buka halaman yang sering dipakai.
                 </p>
               </div>
-
-              <div className="rounded-2xl border bg-background p-2.5 text-primary">
-                <BarChart3 className="h-4 w-4" />
+              <div
+                className="flex items-center justify-center rounded-[10px] p-2"
+                style={{ background: B_LIGHT }}
+              >
+                <LayoutGrid size={18} color={B} />
               </div>
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <Link
-                href="/admin/users"
-                className="inline-flex h-10 items-center justify-between rounded-2xl border bg-background px-4 text-sm font-medium hover:bg-muted"
-              >
-                <span>Kelola Users</span>
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
-
-              <Link
-                href="/admin/tugas"
-                className="inline-flex h-10 items-center justify-between rounded-2xl border bg-background px-4 text-sm font-medium hover:bg-muted"
-              >
-                <span>Kelola Tugas</span>
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
-
-              <Link
-                href="/admin/absensi"
-                className="inline-flex h-10 items-center justify-between rounded-2xl border bg-background px-4 text-sm font-medium hover:bg-muted"
-              >
-                <span>Lihat Absensi</span>
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
-
-              <Link
-                href="/admin/pengumuman"
-                className="inline-flex h-10 items-center justify-between rounded-2xl border bg-background px-4 text-sm font-medium hover:bg-muted"
-              >
-                <span>Pengumuman</span>
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <QuickLink href="/admin/users"      label="Kelola Users" />
+              <QuickLink href="/admin/tugas"      label="Kelola Tugas" />
+              <QuickLink href="/admin/absensi"    label="Lihat Absensi" />
+              <QuickLink href="/admin/pengumuman" label="Pengumuman" />
             </div>
           </section>
 
-          <section className="rounded-[22px] border bg-card p-4 shadow-sm sm:p-5">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-primary" />
-              <h3 className="text-base font-semibold sm:text-lg">Status Sistem</h3>
+          {/* System status */}
+          <section className="rounded-[20px] bg-white p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Activity size={18} color={B} />
+              <h3 className="text-[15px] font-semibold text-[#1A1A2E]">
+                Status Sistem
+              </h3>
             </div>
-
-            <div className="mt-4 space-y-3">
-              <div className="flex items-center justify-between rounded-2xl bg-muted/50 px-4 py-3.5">
-                <span className="text-sm text-muted-foreground">Auth</span>
-                <span className="text-sm font-medium text-emerald-600">
-                  Normal
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between rounded-2xl bg-muted/50 px-4 py-3.5">
-                <span className="text-sm text-muted-foreground">Database</span>
-                <span className="text-sm font-medium text-emerald-600">
-                  Normal
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between rounded-2xl bg-muted/50 px-4 py-3.5">
-                <span className="text-sm text-muted-foreground">Storage</span>
-                <span className="text-sm font-medium text-amber-600">
-                  Siap dipakai
-                </span>
-              </div>
+            <div className="space-y-2">
+              <StatusRow label="Auth"     status="Normal"      ok />
+              <StatusRow label="Database" status="Normal"      ok />
+              <StatusRow label="Storage"  status="Siap dipakai" ok={false} />
             </div>
           </section>
+
         </div>
       </div>
     </DashboardLayout>

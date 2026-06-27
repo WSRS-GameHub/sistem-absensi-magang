@@ -2,6 +2,7 @@ import {
   CalendarCheck2,
   Clock3,
   Filter,
+  Users,
 } from "lucide-react";
 
 import { getTLScope } from "@/lib/auth/get-tl-scope";
@@ -152,47 +153,67 @@ export default async function TLAbsensiPage({
 
   return (
     <DashboardLayout navigation={tlNavigation}>
-      <DashboardPageHeader
-        title="Monitoring Absensi"
-        description={`Pantau absensi peserta magang divisi ${division} secara real-time.`}
-      />
 
       <div className="space-y-5">
         {/* Header Card */}
-        <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
-          <div className="flex flex-col gap-5 bg-gradient-to-r from-primary/[0.06] via-transparent to-transparent p-5 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+        <div
+          className="overflow-hidden rounded-2xl shadow-sm"
+          style={{ background: "#0072CE" }}
+        >
+          <div className="relative flex flex-col gap-5 p-6 lg:flex-row lg:items-center lg:justify-between">
+            {/* Decorative circles */}
+            <div
+              className="pointer-events-none absolute right-[-60px] top-[-80px] h-64 w-64 rounded-full"
+              style={{ background: "rgba(255,255,255,0.06)" }}
+            />
+            <div
+              className="pointer-events-none absolute bottom-[-60px] right-[160px] h-36 w-36 rounded-full"
+              style={{ background: "rgba(255,255,255,0.06)" }}
+            />
+
+            {/* Left: Info */}
+            <div className="relative max-w-lg">
+              <div
+                className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
+                style={{
+                  background: "#FFE600",
+                  color: "#003B7A",
+                }}
+              >
                 <CalendarCheck2 className="h-3.5 w-3.5" />
-                Divisi {division}
+                Monitoring Divisi {division}
               </div>
 
-              <h2 className="mt-4 text-xl font-bold tracking-tight sm:text-2xl">
+              <h2 className="mt-4 text-xl font-semibold tracking-tight text-white sm:text-2xl">
                 Riwayat Kehadiran Peserta
               </h2>
 
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Monitoring aktivitas check-in dan check-out peserta
-                magang berdasarkan tanggal dan periode tertentu.
+              <p className="mt-2 text-sm leading-6" style={{ color: "rgba(255,255,255,0.75)" }}>
+                Pantau absensi dan aktivitas check-in &amp; check-out peserta
+                magang divisi {division} secara real-time.
               </p>
             </div>
 
-            {/* Filter */}
+            {/* Right: Filter */}
             <form
-              className="flex flex-col gap-3 sm:flex-row sm:flex-wrap"
+              className="relative flex flex-col gap-3 sm:flex-row sm:flex-wrap"
               method="get"
             >
               <div className="relative">
                 <select
                   name="month"
                   defaultValue={selectedMonth}
-                  className="h-11 w-full rounded-xl border border-border/60 bg-background px-4 pr-10 text-sm outline-none transition-all focus:border-primary/40 focus:ring-4 focus:ring-primary/10 sm:w-[150px]"
+                  className="h-10 w-full rounded-xl px-4 pr-10 text-sm outline-none transition-all sm:w-[150px]"
+                  style={{
+                    background: "rgba(255,255,255,0.15)",
+                    border: "1.5px solid rgba(255,255,255,0.35)",
+                    color: "#ffffff",
+                  }}
                 >
                   {Array.from({ length: 12 }).map((_, index) => {
                     const month = String(index + 1).padStart(2, "0");
-
                     return (
-                      <option key={month} value={month}>
+                      <option key={month} value={month} style={{ color: "#111", background: "#fff" }}>
                         Bulan {month}
                       </option>
                     );
@@ -204,12 +225,21 @@ export default async function TLAbsensiPage({
                 type="date"
                 name="date"
                 defaultValue={selectedDate}
-                className="h-11 rounded-xl border border-border/60 bg-background px-4 text-sm outline-none transition-all focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                className="h-10 rounded-xl px-4 text-sm outline-none transition-all"
+                style={{
+                  background: "rgba(255,255,255,0.15)",
+                  border: "1.5px solid rgba(255,255,255,0.35)",
+                  color: "#ffffff",
+                }}
               />
 
               <button
                 type="submit"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-medium text-primary-foreground transition-all hover:opacity-95"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold transition-all hover:opacity-90"
+                style={{
+                  background: "#FFE600",
+                  color: "#003B7A",
+                }}
               >
                 <Filter className="h-4 w-4" />
                 Filter
@@ -223,13 +253,19 @@ export default async function TLAbsensiPage({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1000px]">
               <thead>
-                <tr className="border-b border-border/40 bg-muted/30 text-left text-xs uppercase tracking-wider text-muted-foreground">
-                  <th className="px-5 py-4 font-semibold">Nama</th>
-                  <th className="px-4 py-4 font-semibold">Username</th>
-                  <th className="px-4 py-4 font-semibold">Tanggal</th>
-                  <th className="px-4 py-4 font-semibold">Check-In</th>
-                  <th className="px-4 py-4 font-semibold">Check-Out</th>
-                  <th className="px-4 py-4 font-semibold">Status</th>
+                <tr
+                  className="text-left text-xs uppercase tracking-wider"
+                  style={{
+                    borderBottom: "1px solid rgba(0,114,206,0.15)",
+                    background: "rgba(0,114,206,0.05)",
+                  }}
+                >
+                  <th className="px-5 py-4 font-semibold" style={{ color: "#0072CE" }}>Nama</th>
+                  <th className="px-4 py-4 font-semibold" style={{ color: "#0072CE" }}>Username</th>
+                  <th className="px-4 py-4 font-semibold" style={{ color: "#0072CE" }}>Tanggal</th>
+                  <th className="px-4 py-4 font-semibold" style={{ color: "#0072CE" }}>Check-In</th>
+                  <th className="px-4 py-4 font-semibold" style={{ color: "#0072CE" }}>Check-Out</th>
+                  <th className="px-4 py-4 font-semibold" style={{ color: "#0072CE" }}>Status</th>
                 </tr>
               </thead>
 
@@ -237,7 +273,6 @@ export default async function TLAbsensiPage({
                 {attendances.length > 0 ? (
                   attendances.map((attendance) => {
                     const profile = profileMap.get(attendance.user_id);
-
                     const status = getStatus(
                       attendance.check_in_at,
                       attendance.check_out_at
@@ -249,9 +284,15 @@ export default async function TLAbsensiPage({
                         className="transition-colors hover:bg-muted/20"
                       >
                         <td className="px-5 py-4">
-                          <p className="font-medium">
-                            {profile?.nama ?? "-"}
-                          </p>
+                          <div className="flex items-center gap-3">
+                            <div
+                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
+                              style={{ background: "#0072CE" }}
+                            >
+                              {profile?.nama?.charAt(0).toUpperCase() ?? "?"}
+                            </div>
+                            <p className="font-medium">{profile?.nama ?? "-"}</p>
+                          </div>
                         </td>
 
                         <td className="px-4 py-4 text-sm text-muted-foreground">
@@ -263,11 +304,17 @@ export default async function TLAbsensiPage({
                         </td>
 
                         <td className="px-4 py-4 text-sm">
-                          {formatTime(attendance.check_in_at)}
+                          <span className="inline-flex items-center gap-1.5">
+                            <Clock3 className="h-3.5 w-3.5" style={{ color: "#0072CE" }} />
+                            {formatTime(attendance.check_in_at)}
+                          </span>
                         </td>
 
                         <td className="px-4 py-4 text-sm">
-                          {formatTime(attendance.check_out_at)}
+                          <span className="inline-flex items-center gap-1.5">
+                            <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
+                            {formatTime(attendance.check_out_at)}
+                          </span>
                         </td>
 
                         <td className="px-4 py-4">
@@ -286,7 +333,15 @@ export default async function TLAbsensiPage({
                       colSpan={6}
                       className="py-14 text-center text-sm text-muted-foreground"
                     >
-                      Belum ada data absensi.
+                      <div className="flex flex-col items-center gap-3">
+                        <div
+                          className="flex h-12 w-12 items-center justify-center rounded-full"
+                          style={{ background: "rgba(0,114,206,0.08)" }}
+                        >
+                          <Users className="h-5 w-5" style={{ color: "#0072CE" }} />
+                        </div>
+                        <p>Belum ada data absensi.</p>
+                      </div>
                     </td>
                   </tr>
                 )}
@@ -300,7 +355,6 @@ export default async function TLAbsensiPage({
           {attendances.length > 0 ? (
             attendances.map((attendance) => {
               const profile = profileMap.get(attendance.user_id);
-
               const status = getStatus(
                 attendance.check_in_at,
                 attendance.check_out_at
@@ -309,81 +363,92 @@ export default async function TLAbsensiPage({
               return (
                 <div
                   key={attendance.id}
-                  className="rounded-2xl border bg-card p-4 shadow-sm"
+                  className="overflow-hidden rounded-2xl border bg-card shadow-sm"
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <h3 className="truncate font-semibold">
-                        {profile?.nama ?? "-"}
-                      </h3>
+                  {/* Card top accent bar */}
+                  <div className="h-1 w-full" style={{ background: "#0072CE" }} />
 
-                      <p className="text-xs text-muted-foreground">
-                        {profile?.username ?? "-"}
-                      </p>
+                  <div className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+                          style={{ background: "#0072CE" }}
+                        >
+                          {profile?.nama?.charAt(0).toUpperCase() ?? "?"}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="truncate font-semibold">
+                            {profile?.nama ?? "-"}
+                          </h3>
+                          <p className="text-xs text-muted-foreground">
+                            {profile?.username ?? "-"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <span
+                        className={`inline-flex shrink-0 rounded-full px-3 py-1 text-[11px] font-medium ${status.className}`}
+                      >
+                        {status.label}
+                      </span>
                     </div>
 
-                    <span
-                      className={`inline-flex rounded-full px-3 py-1 text-[11px] font-medium ${status.className}`}
-                    >
-                      {status.label}
-                    </span>
-                  </div>
-
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <div className="rounded-xl bg-muted/30 p-3">
-                      <p className="text-xs text-muted-foreground">
-                        Tanggal
-                      </p>
-
-                      <p className="mt-1 text-sm font-medium">
-                        {formatDate(attendance.tanggal)}
-                      </p>
-                    </div>
-
-                    <div className="rounded-xl bg-muted/30 p-3">
-                      <p className="text-xs text-muted-foreground">
-                        Divisi
-                      </p>
-
-                      <p className="mt-1 text-sm font-medium">
-                        {profile?.division ?? "-"}
-                      </p>
-                    </div>
-
-                    <div className="rounded-xl bg-muted/30 p-3">
-                      <div className="flex items-center gap-2">
-                        <Clock3 className="h-4 w-4 text-primary" />
-
-                        <p className="text-xs text-muted-foreground">
-                          Check-In
+                    <div className="mt-4 grid grid-cols-2 gap-3">
+                      <div className="rounded-xl bg-muted/30 p-3">
+                        <p className="text-xs text-muted-foreground">Tanggal</p>
+                        <p className="mt-1 text-sm font-medium">
+                          {formatDate(attendance.tanggal)}
                         </p>
                       </div>
 
-                      <p className="mt-1 text-sm font-medium">
-                        {formatTime(attendance.check_in_at)}
-                      </p>
-                    </div>
-
-                    <div className="rounded-xl bg-muted/30 p-3">
-                      <div className="flex items-center gap-2">
-                        <Clock3 className="h-4 w-4 text-primary" />
-
-                        <p className="text-xs text-muted-foreground">
-                          Check-Out
+                      <div className="rounded-xl bg-muted/30 p-3">
+                        <p className="text-xs text-muted-foreground">Divisi</p>
+                        <p
+                          className="mt-1 text-sm font-bold"
+                          style={{ color: "#0072CE" }}
+                        >
+                          {profile?.division ?? "-"}
                         </p>
                       </div>
 
-                      <p className="mt-1 text-sm font-medium">
-                        {formatTime(attendance.check_out_at)}
-                      </p>
+                      <div className="rounded-xl p-3" style={{ background: "rgba(0,114,206,0.06)" }}>
+                        <div className="flex items-center gap-2">
+                          <Clock3 className="h-4 w-4" style={{ color: "#0072CE" }} />
+                          <p className="text-xs text-muted-foreground">Check-In</p>
+                        </div>
+                        <p className="mt-1 text-sm font-medium">
+                          {formatTime(attendance.check_in_at)}
+                        </p>
+                      </div>
+
+                      <div className="rounded-xl bg-muted/30 p-3">
+                        <div className="flex items-center gap-2">
+                          <Clock3 className="h-4 w-4 text-muted-foreground" />
+                          <p className="text-xs text-muted-foreground">Check-Out</p>
+                        </div>
+                        <p className="mt-1 text-sm font-medium">
+                          {formatTime(attendance.check_out_at)}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
               );
             })
           ) : (
-            <div className="rounded-2xl border border-dashed bg-card py-12 text-center text-sm text-muted-foreground">
-              Belum ada data absensi.
+            <div className="rounded-2xl border border-dashed bg-card py-12 text-center">
+              <div className="flex flex-col items-center gap-3">
+                <div
+                  className="flex h-12 w-12 items-center justify-center rounded-full"
+                  style={{ background: "rgba(0,114,206,0.08)" }}
+                >
+                  <Users className="h-5 w-5" style={{ color: "#0072CE" }} />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Belum ada data absensi.
+                </p>
+              </div>
             </div>
           )}
         </div>
