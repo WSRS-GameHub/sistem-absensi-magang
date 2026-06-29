@@ -20,7 +20,8 @@ type ProfileRow = {
   nama: string;
   division: "PA" | "TE" | "TEKNIK" | null;
   is_active: boolean;
-  created_at: string | null;
+  akhir_magang: string | null;
+  mulai_magang: string | null;
 };
 
 type AttendanceRow = {
@@ -29,7 +30,7 @@ type AttendanceRow = {
   tanggal: string;
   check_in_at: string | null;
   check_out_at: string | null;
-  created_at: string | null;
+  mulai_magang: string | null;
 };
 
 type TaskRow = {
@@ -38,7 +39,7 @@ type TaskRow = {
   due_date: string | null;
   target_type: "all" | "division" | "individual" | null;
   target_division: "PA" | "TE" | "TEKNIK" | null;
-  created_at: string | null;
+  mulai_magang: string | null;
 };
 
 type TaskUserRow = {
@@ -46,7 +47,7 @@ type TaskUserRow = {
   tugas_id: string;
   user_id: string;
   status: "pending" | "in_progress" | "submitted" | "selesai";
-  created_at: string | null;
+  mulai_magang: string | null;
 };
 
 function formatDate(value: string | null) {
@@ -57,6 +58,19 @@ function formatDate(value: string | null) {
     month: "short",
     year: "numeric",
   });
+}
+
+/**
+ * Status aktif yang sebenarnya = is_active bernilai true DAN
+ * (tidak ada tanggal akhir_magang ATAU tanggal akhir_magang belum lewat).
+ * Konsisten dengan logika yang dipakai di halaman admin.
+ */
+function isUserActive(item: ProfileRow) {
+  if (!item.is_active) return false;
+  if (!item.akhir_magang) return true;
+
+  const today = new Date().toISOString().slice(0, 10);
+  return item.akhir_magang >= today;
 }
 
 export default async function ManagerDashboardPage() {
@@ -92,29 +106,29 @@ export default async function ManagerDashboardPage() {
 
     supabase
       .from("profiles")
-      .select("id, nama, division, is_active, created_at")
+      .select("id, nama, division, is_active, akhir_magang, mulai_magang")
       .eq("role", "peserta")
       .eq("is_active", true)
-      .order("created_at", { ascending: false })
+      .order("mulai_magang", { ascending: false })
       .limit(4),
 
     supabase
       .from("absensi")
-      .select("id, user_id, tanggal, check_in_at, check_out_at, created_at")
+      .select("id, user_id, tanggal, check_in_at, check_out_at, mulai_magang")
       .eq("tanggal", today)
-      .order("created_at", { ascending: false })
+      .order("mulai_magang", { ascending: false })
       .limit(4),
 
     supabase
       .from("tugas")
-      .select("id, title, due_date, target_type, target_division, created_at")
-      .order("created_at", { ascending: false })
+      .select("id, title, due_date, target_type, target_division, mulai_magang")
+      .order("mulai_magang", { ascending: false })
       .limit(4),
 
     supabase
       .from("tugas_user")
-      .select("id, tugas_id, user_id, status, created_at")
-      .order("created_at", { ascending: false })
+      .select("id, tugas_id, user_id, status, mulai_magang")
+      .order("mulai_magang", { ascending: false })
       .limit(200),
   ]);
 
@@ -153,9 +167,9 @@ export default async function ManagerDashboardPage() {
 
   const stats = [
     {
-      title: "Peserta Aktif",
+      title: "Users Aktif",
       value: String(totalParticipants ?? 0),
-      desc: "Peserta aktif",
+      desc: "Users aktif",
       icon: Users,
       tone: "bg-[#0072CE] text-white",
       href: "/manager/peserta",
@@ -201,7 +215,7 @@ export default async function ManagerDashboardPage() {
             </div>
 
             <p className="mt-3 max-w-xl text-sm leading-6 text-white/85">
-              Monitoring peserta, absensi, dan progres tugas magang.
+              Monitoring users, absensi, dan progres tugas magang.
             </p>
           </div>
         </section>
@@ -251,7 +265,7 @@ export default async function ManagerDashboardPage() {
                 </h3>
 
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Monitoring tugas peserta.
+                  Monitoring tugas users.
                 </p>
               </div>
 
@@ -403,21 +417,21 @@ export default async function ManagerDashboardPage() {
           </section>
         </div>
 
-        {/* Peserta aktif */}
+        {/* Users aktif - sekarang sebagai tabel */}
         <section className="rounded-[22px] border border-[#0072CE]/10 bg-card p-5 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                Peserta Aktif
+                Users Aktif
               </h3>
 
               <p className="mt-1 text-sm text-muted-foreground">
-                Peserta terbaru yang aktif.
+                Users terbaru yang aktif.
               </p>
             </div>
 
             <Link
-              href="/manager/peserta"
+              href="/manager/users"
               className="inline-flex h-9 items-center gap-2 rounded-xl border border-[#0072CE]/15 px-4 text-sm font-medium text-[#0072CE] transition-colors hover:bg-[#0072CE]/[0.06]"
             >
               Semua
@@ -425,34 +439,110 @@ export default async function ManagerDashboardPage() {
             </Link>
           </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {/* Tabel - desktop / tablet */}
+          <div className="mt-4 hidden overflow-x-auto sm:block">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-[#0072CE]/10 text-xs text-muted-foreground">
+                  <th className="px-4 py-3 font-medium">Nama</th>
+                  <th className="px-4 py-3 font-medium">Divisi</th>
+                  <th className="px-4 py-3 font-medium">Berakhir</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {participants.length > 0 ? (
+                  participants.map((item) => {
+                    const active = isUserActive(item);
+
+                    return (
+                      <tr
+                        key={item.id}
+                        className="border-b border-[#0072CE]/5 last:border-0 hover:bg-[#0072CE]/[0.03]"
+                      >
+                        <td className="px-4 py-3 font-medium text-foreground">
+                          {item.nama}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {item.division ?? "-"}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {formatDate(item.akhir_magang)}
+                        </td>
+                        <td className="px-4 py-3">
+                          {active ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-[#FFE600]/25 px-2.5 py-1 text-[11px] font-semibold text-[#0A2540]">
+                              <span className="h-1.5 w-1.5 rounded-full bg-[#0A2540]" />
+                              Aktif
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold text-red-600">
+                              <span className="h-1.5 w-1.5 rounded-full bg-red-600" />
+                              Tidak Aktif
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="px-4 py-10 text-center text-sm text-muted-foreground"
+                    >
+                      Belum ada users.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Kartu - mobile */}
+          <div className="mt-4 space-y-3 sm:hidden">
             {participants.length > 0 ? (
-              participants.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-2xl border border-[#0072CE]/10 bg-[#0072CE]/[0.03] p-4 transition-colors hover:border-[#0072CE]/30"
-                >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0072CE]/10 text-[#0072CE]">
-                    <Users className="h-4 w-4" />
+              participants.map((item) => {
+                const active = isUserActive(item);
+
+                return (
+                  <div
+                    key={item.id}
+                    className="rounded-2xl border border-[#0072CE]/10 bg-[#0072CE]/[0.03] p-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#0072CE]/10 text-[#0072CE]">
+                          <Users className="h-4 w-4" />
+                        </div>
+                        <p className="truncate font-medium text-foreground">
+                          {item.nama}
+                        </p>
+                      </div>
+
+                      {active ? (
+                        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#FFE600]/25 px-2.5 py-1 text-[11px] font-semibold text-[#0A2540]">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#0A2540]" />
+                          Aktif
+                        </span>
+                      ) : (
+                        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-semibold text-red-600">
+                          <span className="h-1.5 w-1.5 rounded-full bg-red-600" />
+                          Tidak Aktif
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Divisi {item.division ?? "-"}</span>
+                      <span>Berakhir {formatDate(item.akhir_magang)}</span>
+                    </div>
                   </div>
-
-                  <p className="mt-3 truncate font-medium text-foreground">
-                    {item.nama}
-                  </p>
-
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Divisi {item.division ?? "-"}
-                  </p>
-
-                  <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#FFE600]/25 px-2.5 py-1 text-[11px] font-semibold text-[#0A2540]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#0A2540]" />
-                    Aktif
-                  </span>
-                </div>
-              ))
+                );
+              })
             ) : (
-              <div className="col-span-full rounded-2xl border border-dashed border-[#0072CE]/20 p-8 text-center text-sm text-muted-foreground">
-                Belum ada peserta.
+              <div className="rounded-2xl border border-dashed border-[#0072CE]/20 p-8 text-center text-sm text-muted-foreground">
+                Belum ada users.
               </div>
             )}
           </div>
@@ -471,7 +561,7 @@ export default async function ManagerDashboardPage() {
 
             <p className="mt-1.5 text-sm leading-7 text-muted-foreground">
               Manager hanya memiliki akses monitoring untuk melihat
-              data peserta, absensi, dan progres tugas tanpa
+              data users, absensi, dan progres tugas tanpa
               mengubah data sistem.
             </p>
           </div>

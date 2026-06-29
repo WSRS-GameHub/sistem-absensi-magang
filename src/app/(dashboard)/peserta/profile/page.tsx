@@ -24,7 +24,7 @@ type ProfileRow = {
   phone: string | null;
   role: string;
   division: string | null;
-  created_at: string;
+  mulai_magang: string;
   is_active: boolean;
 };
 
@@ -43,7 +43,7 @@ export default async function PesertaProfilePage() {
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "id, nama, username, email, phone, role, division, created_at, is_active"
+      "id, nama, username, email, phone, role, division, mulai_magang, is_active"
     )
     .eq("id", user.id)
     .single();
@@ -147,7 +147,7 @@ export default async function PesertaProfilePage() {
                     Bergabung Sejak
                   </p>
                   <p className="truncate text-sm font-semibold text-foreground">
-                    {formatDate(profile.created_at)}
+                    {formatDate(profile.mulai_magang)}
                   </p>
                 </div>
               </div>

@@ -1,3 +1,4 @@
+import Script from "next/script";
 import { Users2 } from "lucide-react";
 
 import { requireRole } from "@/lib/auth/require-role";
@@ -10,7 +11,10 @@ type ProfileRow = {
   id: string;
   nama: string;
   division: "PA" | "TE" | "TEKNIK" | null;
+  instansi: string | null;
   is_active: boolean;
+  mulai_magang: string | null;
+  akhir_magang: string | null;
   created_at: string | null;
 };
 
@@ -25,28 +29,60 @@ function formatDate(value: string | null) {
   });
 }
 
-function getDivisionAccent(division: string) {
+/**
+ * Status aktif yang sebenarnya = is_active bernilai true DAN
+ * tanggal hari ini berada di rentang mulai_magang..akhir_magang
+ * (kalau salah satu tanggal kosong, batas itu diabaikan).
+ */
+function isUserActive(item: ProfileRow) {
+  if (!item.is_active) return false;
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  if (item.mulai_magang && today < item.mulai_magang) return false;
+  if (item.akhir_magang && today > item.akhir_magang) return false;
+
+  return true;
+}
+
+function getDivisionAccent(division: string | null) {
   if (division === "PA")
     return {
       badge: { background: "#0072CE15", color: "#0072CE", border: "1px solid #0072CE30" },
-      header: { background: "#0072CE", color: "#fff" },
-      card: { borderColor: "#0072CE1a", background: "#0072CE06" },
       dot: "#0072CE",
     };
   if (division === "TE")
     return {
       badge: { background: "#FFE60025", color: "#7a6200", border: "1px solid #FFE60070" },
-      header: { background: "#e6a800", color: "#fff" },
-      card: { borderColor: "#FFE60040", background: "#FFE6000a" },
       dot: "#e6a800",
     };
-  // TEKNIK
+  if (division === "TEKNIK")
+    return {
+      badge: { background: "#0072CE08", color: "#005baa", border: "1px solid #0072CE20" },
+      dot: "#003d7a",
+    };
   return {
-    badge: { background: "#0072CE08", color: "#005baa", border: "1px solid #0072CE20" },
-    header: { background: "#003d7a", color: "#FFE600" },
-    card: { borderColor: "#003d7a1a", background: "#003d7a06" },
-    dot: "#003d7a",
+    badge: { background: "#f3f4f6", color: "#6b7280", border: "1px solid #e5e7eb" },
+    dot: "#9ca3af",
   };
+}
+
+function StatusBadge({ active }: { active: boolean }) {
+  if (active) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-600">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        Aktif
+      </span>
+    );
+  }
+
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2.5 py-1 text-[11px] font-medium text-red-600">
+      <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+      Tidak Aktif
+    </span>
+  );
 }
 
 export default async function ManagerPesertaPage() {
@@ -54,29 +90,43 @@ export default async function ManagerPesertaPage() {
 
   const supabase = createAdminClient();
 
+  // Tidak memfilter is_active di query — status aktif sebenarnya
+  // dihitung di bawah berdasarkan is_active + mulai_magang + akhir_magang,
+  // supaya peserta yang belum mulai / sudah lewat tanggal akhir tetap
+  // terlihat di daftar (ditandai "Tidak Aktif") bukan menghilang.
   const { data } = await supabase
     .from("profiles")
-    .select("id, nama, division, is_active, created_at")
+    .select(
+      "id, nama, division, instansi, is_active, mulai_magang, akhir_magang, created_at"
+    )
     .eq("role", "peserta")
-    .eq("is_active", true)
     .order("created_at", { ascending: false });
 
   const participants = (data ?? []) as ProfileRow[];
 
-  const byDivision = DIVISIONS.map((div) => ({
-    division: div,
-    members: participants.filter((p) => p.division === div),
-  }));
+  const counts: Record<"ALL" | (typeof DIVISIONS)[number], number> = {
+    ALL: participants.length,
+    PA: participants.filter((p) => p.division === "PA").length,
+    TE: participants.filter((p) => p.division === "TE").length,
+    TEKNIK: participants.filter((p) => p.division === "TEKNIK").length,
+  };
 
-  const noDivision = participants.filter((p) => !p.division);
+  const activeCount = participants.filter((p) => isUserActive(p)).length;
+  const inactiveCount = participants.length - activeCount;
+
+  const tabs: { value: "ALL" | (typeof DIVISIONS)[number]; label: string }[] = [
+    { value: "ALL", label: "Semua" },
+    { value: "PA", label: "PA" },
+    { value: "TE", label: "TE" },
+    { value: "TEKNIK", label: "TEKNIK" },
+  ];
 
   return (
     <DashboardLayout navigation={managerNavigation}>
       <div className="space-y-5">
-
         {/* Header */}
         <section
-          className="rounded-[22px] p-5 shadow-sm relative overflow-hidden"
+          className="relative overflow-hidden rounded-[22px] p-5 shadow-sm"
           style={{ background: "linear-gradient(135deg, #0072CE 0%, #005baa 100%)" }}
         >
           <div
@@ -92,179 +142,258 @@ export default async function ManagerPesertaPage() {
               className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold tracking-wide"
               style={{ background: "#FFE600", color: "#003d7a" }}
             >
-              Monitoring Peserta
+              Monitoring Users
             </div>
             <p className="mt-2 text-sm text-blue-100">
-              Daftar peserta aktif kegiatan magang.
+              Daftar users kegiatan magang per divisi.
             </p>
           </div>
         </section>
 
-        {/* Stats */}
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div
-            className="rounded-[20px] p-4 shadow-sm relative overflow-hidden border-0"
-            style={{ background: "#0072CE" }}
-          >
-            <div
-              className="absolute bottom-0 right-0 h-16 w-16 rounded-tl-full opacity-20"
-              style={{ background: "#FFE600" }}
-            />
-            <p className="text-xs font-medium text-blue-100">Total Peserta</p>
-            <h2 className="mt-2 text-2xl font-bold tracking-tight text-white">
-              {participants.length}
-            </h2>
-          </div>
+        {/* Tabel + tab divisi (filter tanpa reload via data-attribute) */}
+        <section
+          id="users-table-section"
+          className="rounded-[22px] border border-[#0072CE]/10 bg-card shadow-sm"
+        >
+          {/* Tab divisi */}
+          <div className="flex flex-wrap items-center gap-2 border-b border-[#0072CE]/10 p-4 sm:px-5">
+            {tabs.map((tab) => {
+              const accent = getDivisionAccent(tab.value === "ALL" ? null : tab.value);
+              const isDefaultActive = tab.value === "ALL";
 
-          {DIVISIONS.map((div) => {
-            const accent = getDivisionAccent(div);
-            const count = participants.filter((p) => p.division === div).length;
-            return (
-              <div
-                key={div}
-                className="rounded-[20px] p-4 shadow-sm border"
-                style={{ borderColor: accent.card.borderColor, background: accent.card.background }}
-              >
-                <p className="text-xs font-medium" style={{ color: accent.dot }}>
-                  Divisi {div}
-                </p>
-                <h2 className="mt-2 text-2xl font-bold tracking-tight" style={{ color: accent.dot }}>
-                  {count}
-                </h2>
-              </div>
-            );
-          })}
-        </section>
-
-        {/* Per-Division Sections */}
-        <section className="space-y-4">
-          {byDivision.map(({ division, members }) => {
-            const accent = getDivisionAccent(division);
-            return (
-              <div
-                key={division}
-                className="overflow-hidden rounded-[22px] shadow-sm"
-                style={{ border: `1px solid ${accent.card.borderColor}` }}
-              >
-                {/* Division Header */}
-                <div
-                  className="flex items-center justify-between px-4 py-3 sm:px-5"
-                  style={accent.header}
+              return (
+                <button
+                  key={tab.value}
+                  type="button"
+                  data-division-tab={tab.value}
+                  data-active={isDefaultActive ? "true" : "false"}
+                  className="division-tab-btn flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors"
+                  style={
+                    isDefaultActive
+                      ? { background: "#0072CE", color: "#fff" }
+                      : { background: "#0072CE0a", color: "#0072CE" }
+                  }
                 >
-                  <div className="flex items-center gap-2">
-                    <Users2 className="h-4 w-4" />
-                    <h3 className="text-sm font-semibold tracking-tight">
-                      Divisi {division}
-                    </h3>
-                  </div>
+                  {tab.value !== "ALL" && (
+                    <span
+                      className="h-1.5 w-1.5 rounded-full tab-dot"
+                      style={{ background: isDefaultActive ? "#FFE600" : accent.dot }}
+                    />
+                  )}
+                  {tab.label}
                   <span
-                    className="rounded-full px-2.5 py-0.5 text-[11px] font-bold"
+                    className="rounded-full px-1.5 text-[11px] font-semibold tab-count"
                     style={{
-                      background: "rgba(255,255,255,0.2)",
-                      color: "inherit",
+                      background: isDefaultActive ? "rgba(255,255,255,0.2)" : "#0072CE15",
                     }}
                   >
-                    {members.length} peserta
+                    {counts[tab.value]}
                   </span>
-                </div>
+                </button>
+              );
+            })}
 
-                {/* Member Cards */}
-                <div
-                  className="grid gap-3 p-4 sm:grid-cols-2 sm:p-5 xl:grid-cols-3 2xl:grid-cols-4"
-                  style={{ background: accent.card.background }}
-                >
-                  {members.length > 0 ? (
-                    members.map((item) => (
-                      <div
+            <span className="ml-auto text-xs text-muted-foreground">
+              {activeCount} aktif · {inactiveCount} tidak aktif dari {participants.length}{" "}
+              users
+            </span>
+          </div>
+
+          {/* Tabel - desktop / tablet */}
+          <div className="hidden overflow-x-auto sm:block">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-[#0072CE]/10 text-xs text-muted-foreground">
+                  <th className="px-5 py-3 font-medium">Nama</th>
+                  <th className="px-5 py-3 font-medium">Divisi</th>
+                  <th className="px-5 py-3 font-medium">Instansi</th>
+                  <th className="px-5 py-3 font-medium">Mulai</th>
+                  <th className="px-5 py-3 font-medium">Akhir</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {participants.length > 0 ? (
+                  participants.map((item) => {
+                    const accent = getDivisionAccent(item.division);
+                    const active = isUserActive(item);
+
+                    return (
+                      <tr
                         key={item.id}
-                        className="rounded-2xl p-4 transition-colors hover:brightness-95"
-                        style={{
-                          border: `1px solid ${accent.card.borderColor}`,
-                          background: "#fff",
-                        }}
+                        data-row-division={item.division ?? ""}
+                        className="user-row border-b border-[#0072CE]/5 last:border-0 hover:bg-[#0072CE]/[0.03]"
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <h4 className="truncate text-sm font-semibold tracking-tight sm:text-base">
-                              {item.nama}
-                            </h4>
-
-                            <div className="mt-2">
-                              <span
-                                className="inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium"
-                                style={accent.badge}
-                              >
-                                {item.division ?? "-"}
-                              </span>
-                            </div>
-
-                            <p className="mt-3 text-xs text-muted-foreground">
-                              Bergabung {formatDate(item.created_at)}
-                            </p>
-                          </div>
-
-                          <span className="shrink-0 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-600">
-                            Aktif
+                        <td className="px-5 py-3 font-medium text-foreground">
+                          {item.nama}
+                        </td>
+                        <td className="px-5 py-3">
+                          <span
+                            className="inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium"
+                            style={accent.badge}
+                          >
+                            {item.division ?? "-"}
                           </span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div
-                      className="col-span-full rounded-2xl p-8 text-center text-sm text-muted-foreground"
-                      style={{
-                        border: `1.5px dashed ${accent.card.borderColor}`,
-                      }}
+                        </td>
+                        <td className="px-5 py-3 text-muted-foreground">
+                          {item.instansi ?? "-"}
+                        </td>
+                        <td className="px-5 py-3 text-muted-foreground">
+                          {formatDate(item.mulai_magang)}
+                        </td>
+                        <td className="px-5 py-3 text-muted-foreground">
+                          {formatDate(item.akhir_magang)}
+                        </td>
+                        <td className="px-5 py-3">
+                          <StatusBadge active={active} />
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-5 py-10 text-center text-sm text-muted-foreground"
                     >
-                      Belum ada peserta di divisi {division}.
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+                      Belum ada users.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
 
-          {/* No division group */}
-          {noDivision.length > 0 && (
-            <div
-              className="overflow-hidden rounded-[22px] shadow-sm border"
-              style={{ borderColor: "#e5e7eb" }}
+            <p
+              id="empty-state-desktop"
+              className="hidden px-5 py-10 text-center text-sm text-muted-foreground"
             >
-              <div className="flex items-center justify-between bg-muted/40 px-4 py-3 sm:px-5">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Users2 className="h-4 w-4" />
-                  <h3 className="text-sm font-semibold tracking-tight">Tanpa Divisi</h3>
-                </div>
-                <span className="rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-bold text-muted-foreground">
-                  {noDivision.length} peserta
-                </span>
-              </div>
+              Belum ada users untuk divisi ini.
+            </p>
+          </div>
 
-              <div className="grid gap-3 p-4 sm:grid-cols-2 sm:p-5 xl:grid-cols-3 2xl:grid-cols-4">
-                {noDivision.map((item) => (
+          {/* Kartu - mobile */}
+          <div className="space-y-3 p-4 sm:hidden">
+            {participants.length > 0 ? (
+              participants.map((item) => {
+                const accent = getDivisionAccent(item.division);
+                const active = isUserActive(item);
+
+                return (
                   <div
                     key={item.id}
-                    className="rounded-2xl border bg-muted/20 p-4 transition-all hover:bg-muted/30"
+                    data-row-division={item.division ?? ""}
+                    className="user-row rounded-2xl border border-[#0072CE]/10 bg-[#0072CE]/[0.03] p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <h4 className="truncate text-sm font-semibold tracking-tight sm:text-base">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#0072CE]/10 text-[#0072CE]">
+                          <Users2 className="h-4 w-4" />
+                        </div>
+                        <p className="truncate font-medium text-foreground">
                           {item.nama}
-                        </h4>
-                        <p className="mt-3 text-xs text-muted-foreground">
-                          Bergabung {formatDate(item.created_at)}
                         </p>
                       </div>
-                      <span className="shrink-0 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-600">
-                        Aktif
+                      <StatusBadge active={active} />
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <span
+                        className="inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium"
+                        style={accent.badge}
+                      >
+                        {item.division ?? "-"}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {item.instansi ?? "-"}
                       </span>
                     </div>
+
+                    <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Mulai {formatDate(item.mulai_magang)}</span>
+                      <span>Akhir {formatDate(item.akhir_magang)}</span>
+                    </div>
                   </div>
-                ))}
+                );
+              })
+            ) : (
+              <div className="rounded-2xl border border-dashed border-[#0072CE]/20 p-8 text-center text-sm text-muted-foreground">
+                Belum ada users.
               </div>
-            </div>
-          )}
+            )}
+
+            <p
+              id="empty-state-mobile"
+              className="hidden rounded-2xl border border-dashed border-[#0072CE]/20 p-8 text-center text-sm text-muted-foreground"
+            >
+              Belum ada users untuk divisi ini.
+            </p>
+          </div>
         </section>
+
+        {/* Script kecil: filter tab divisi tanpa reload halaman.
+            Pakai next/script (bukan tag <script> mentah) karena App Router
+            React Server Components tidak mengeksekusi tag <script> biasa
+            yang dirender langsung di JSX. */}
+        <Script
+          id="users-table-filter-script"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                var section = document.getElementById("users-table-section");
+                if (!section) return;
+
+                var tabs = section.querySelectorAll(".division-tab-btn");
+                var rows = section.querySelectorAll(".user-row");
+                var emptyDesktop = document.getElementById("empty-state-desktop");
+                var emptyMobile = document.getElementById("empty-state-mobile");
+
+                function applyFilter(value) {
+                  var visibleCount = 0;
+
+                  rows.forEach(function (row) {
+                    var rowDivision = row.getAttribute("data-row-division");
+                    var show = value === "ALL" || rowDivision === value;
+                    row.style.display = show ? "" : "none";
+                    if (show) visibleCount++;
+                  });
+
+                  if (emptyDesktop) {
+                    emptyDesktop.classList.toggle("hidden", visibleCount !== 0 || rows.length === 0);
+                  }
+                  if (emptyMobile) {
+                    emptyMobile.classList.toggle("hidden", visibleCount !== 0 || rows.length === 0);
+                  }
+                }
+
+                tabs.forEach(function (tab) {
+                  tab.addEventListener("click", function () {
+                    var value = tab.getAttribute("data-division-tab");
+
+                    tabs.forEach(function (t) {
+                      var isActive = t === tab;
+                      t.setAttribute("data-active", isActive ? "true" : "false");
+                      t.style.background = isActive ? "#0072CE" : "#0072CE0a";
+                      t.style.color = isActive ? "#fff" : "#0072CE";
+
+                      var dot = t.querySelector(".tab-dot");
+                      if (dot) {
+                        dot.style.background = isActive ? "#FFE600" : dot.getAttribute("data-base-color") || dot.style.background;
+                      }
+
+                      var count = t.querySelector(".tab-count");
+                      if (count) {
+                        count.style.background = isActive ? "rgba(255,255,255,0.2)" : "#0072CE15";
+                      }
+                    });
+
+                    applyFilter(value);
+                  });
+                });
+              })();
+            `,
+          }}
+        />
       </div>
     </DashboardLayout>
   );
