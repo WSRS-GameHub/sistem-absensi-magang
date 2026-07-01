@@ -132,9 +132,11 @@ export default async function AdminUsersPage() {
 
   const participants = (data ?? []) as ParticipantRow[];
   const activeCount = participants.filter((p) => getMagangStatus(p) === "aktif").length;
-  const paCount     = participants.filter((p) => p.division === "PA").length;
-  const teCount     = participants.filter((p) => p.division === "TE").length;
-  const teknikCount = participants.filter((p) => p.division === "TEKNIK").length;
+  const normalizeDivision = (d: string | null) => (d ?? "").trim().toUpperCase();
+
+  const paCount     = participants.filter((p) => normalizeDivision(p.division) === "PA").length;
+  const teCount     = participants.filter((p) => normalizeDivision(p.division) === "TE").length;
+  const teknikCount = participants.filter((p) => normalizeDivision(p.division) === "TEKNIK").length;
 
   const TH_COLS = ["Peserta", "Jurusan / Instansi", "Divisi", "Periode Magang", "Status", "Aksi"];
 
