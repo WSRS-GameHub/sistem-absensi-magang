@@ -13,7 +13,11 @@ import { pesertaNavigation } from "@/constants/navigation";
 import { AbsensiClient } from "@/components/peserta/absensi-client";
 import { OfficeMapWrapper } from "@/components/maps/office-map-wrapper";
 
-// ---- Types & helpers tidak berubah -------------------------
+// ---- Konstanta timezone ------------------------------------
+
+const TIMEZONE = "Asia/Jakarta";
+
+// ---- Types & helpers ----------------------------------------
 
 type AttendanceRow = {
   id: string;
@@ -23,11 +27,47 @@ type AttendanceRow = {
   status: string;
 };
 
+/**
+ * Mengambil tanggal hari ini dalam format YYYY-MM-DD
+ * berdasarkan timezone Asia/Jakarta (bukan UTC server).
+ * Ini penting karena new Date().toISOString() akan mengambil
+ * tanggal UTC, yang bisa salah saat mendekati tengah malam WIB.
+ */
+function getTodayJakarta(): string {
+  const now = new Date();
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONE,
+  }).format(now); // format: YYYY-MM-DD
+}
+
+/**
+ * Mengambil bulan berjalan (2 digit) berdasarkan timezone Asia/Jakarta.
+ */
+function getCurrentMonthJakarta(): string {
+  const now = new Date();
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONE,
+    month: "2-digit",
+  }).format(now);
+}
+
+/**
+ * Mengambil tahun berjalan berdasarkan timezone Asia/Jakarta.
+ */
+function getCurrentYearJakarta(): string {
+  const now = new Date();
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONE,
+    year: "numeric",
+  }).format(now);
+}
+
 function formatDate(value: string) {
   return new Date(value).toLocaleDateString("id-ID", {
     day: "2-digit",
     month: "short",
     year: "numeric",
+    timeZone: TIMEZONE,
   });
 }
 
@@ -36,6 +76,7 @@ function formatTime(value: string | null) {
   return new Date(value).toLocaleTimeString("id-ID", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: TIMEZONE,
   });
 }
 
@@ -62,18 +103,19 @@ function getStatusLabel(
 }
 
 function getMonthOptions() {
-  const year = new Date().getFullYear();
+  const year = getCurrentYearJakarta();
   return ["01","02","03","04","05","06","07","08","09","10","11","12"].map(
     (month) => ({
       value: month,
-      label: new Date(`${year}-${month}-01`).toLocaleDateString("id-ID", {
+      label: new Date(`${year}-${month}-01T00:00:00`).toLocaleDateString("id-ID", {
         month: "long",
+        timeZone: TIMEZONE,
       }),
     })
   );
 }
 
-// ---- Page (logika identik, tampilan disesuaikan ke style dashboard) ----
+// ---- Page -----------------------------------------------------
 
 export default async function PesertaAbsensiPage({
   searchParams,
@@ -83,9 +125,14 @@ export default async function PesertaAbsensiPage({
   const params = await searchParams;
   const user = await requireRole(["peserta"]);
   const supabase = await createClient();
-  const today = new Date().toISOString().slice(0, 10);
+
+  // Menggunakan tanggal Asia/Jakarta, bukan UTC server,
+  // supaya tidak salah tanggal saat mendekati tengah malam WIB.
+  const today = getTodayJakarta();
+  const currentYear = getCurrentYearJakarta();
+
   const selectedMonth =
-    params?.month?.trim() || new Date().toISOString().slice(5, 7);
+    params?.month?.trim() || getCurrentMonthJakarta();
   const selectedDate = params?.date?.trim() || "";
 
   const { data: todayAttendance } = await supabase
@@ -104,10 +151,10 @@ export default async function PesertaAbsensiPage({
     historyQuery = historyQuery.eq("tanggal", selectedDate);
   } else if (selectedMonth) {
     historyQuery = historyQuery
-      .gte("tanggal", `${new Date().getFullYear()}-${selectedMonth}-01`)
+      .gte("tanggal", `${currentYear}-${selectedMonth}-01`)
       .lt(
         "tanggal",
-        `${new Date().getFullYear()}-${
+        `${currentYear}-${
           selectedMonth === "12"
             ? "01"
             : String(Number(selectedMonth) + 1).padStart(2, "0")

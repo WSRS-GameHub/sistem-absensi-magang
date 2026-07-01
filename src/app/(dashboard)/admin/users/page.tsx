@@ -20,6 +20,7 @@ type ParticipantRow = {
   akhir_magang: string | null;
   is_active: boolean;
   created_at: string | null;
+  avatar_url: string | null;
 };
 
 /* Status dihitung dari tanggal akhir magang vs hari ini */
@@ -53,8 +54,33 @@ const avatarStyle: Record<string, { bg: string; border: string; color: string }>
   default: { bg: "#DBEEFF", border: "#93C5FD", color: "#1D4ED8" },
 };
 
-function Avatar({ nama, division }: { nama: string; division: string | null }) {
+function Avatar({
+  nama,
+  division,
+  avatarUrl,
+}: {
+  nama: string;
+  division: string | null;
+  avatarUrl: string | null;
+}) {
   const s = avatarStyle[division ?? "default"] ?? avatarStyle.default;
+
+  if (avatarUrl) {
+    return (
+      <div
+        className="h-9 w-9 shrink-0 overflow-hidden rounded-full border-2"
+        style={{ borderColor: s.border }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={avatarUrl}
+          alt={`Foto ${nama}`}
+          className="h-full w-full object-cover"
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-[11px] font-extrabold uppercase"
@@ -123,7 +149,7 @@ export default async function AdminUsersPage() {
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "id, nama, username, email, jurusan, instansi, division, mulai_magang, akhir_magang, is_active, created_at"
+      "id, nama, username, email, jurusan, instansi, division, mulai_magang, akhir_magang, is_active, created_at, avatar_url"
     )
     .eq("role", "peserta")
     .order("created_at", { ascending: false });
@@ -225,7 +251,11 @@ export default async function AdminUsersPage() {
                         {/* Peserta */}
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
-                            <Avatar nama={item.nama} division={item.division} />
+                            <Avatar
+                              nama={item.nama}
+                              division={item.division}
+                              avatarUrl={item.avatar_url}
+                            />
                             <div>
                               <p className="text-[13px] font-bold text-[#0F1D2A]">{item.nama}</p>
                               <p className="text-[11px] text-[#7A94A8]">@{item.username}</p>

@@ -26,6 +26,7 @@ type ProfileRow = {
   division: string | null;
   created_at: string;
   is_active: boolean;
+  avatar_url: string | null;
 };
 
 function formatDate(value: string) {
@@ -43,7 +44,7 @@ export default async function PesertaEditProfilePage() {
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "id, nama, username, email, phone, role, division, created_at, is_active"
+      "id, nama, username, email, phone, role, division, created_at, is_active, avatar_url"
     )
     .eq("id", user.id)
     .single();
@@ -180,6 +181,7 @@ export default async function PesertaEditProfilePage() {
                 nama={profile.nama}
                 email={profile.email ?? ""}
                 phone={profile.phone ?? ""}
+                avatarUrl={profile.avatar_url}
               />
             </div>
           </section>

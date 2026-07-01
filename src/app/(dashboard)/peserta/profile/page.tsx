@@ -26,6 +26,7 @@ type ProfileRow = {
   division: string | null;
   mulai_magang: string;
   is_active: boolean;
+  avatar_url: string | null;
 };
 
 function formatDate(value: string) {
@@ -43,7 +44,7 @@ export default async function PesertaProfilePage() {
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "id, nama, username, email, phone, role, division, mulai_magang, is_active"
+      "id, nama, username, email, phone, role, division, mulai_magang, is_active, avatar_url"
     )
     .eq("id", user.id)
     .single();
@@ -57,26 +58,43 @@ export default async function PesertaProfilePage() {
   return (
     <DashboardLayout navigation={pesertaNavigation}>
       <div className="space-y-5">
-        {/* Header banner — identitas utama, tanpa foto */}
+        {/* Header banner — identitas utama, sekarang dengan foto */}
         <section className="relative overflow-hidden rounded-[24px] bg-[#0072CE] p-5 shadow-sm sm:p-7">
           {/* aksen kuning diagonal */}
           <div className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rotate-12 rounded-[28px] bg-[#FFE600]/90" />
           <div className="pointer-events-none absolute -right-2 top-10 h-20 w-20 rotate-12 rounded-2xl bg-white/10" />
 
           <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                <Sparkles className="h-3.5 w-3.5 text-[#FFE600]" />
-                Profile Peserta
+            <div className="flex items-center gap-4">
+              {/* Foto profil */}
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-white/40 bg-white/15 shadow-sm sm:h-20 sm:w-20">
+                {profile.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={profile.avatar_url}
+                    alt={`Foto profil ${profile.nama}`}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <UserRound className="h-7 w-7 text-white sm:h-9 sm:w-9" />
+                )}
               </div>
 
-              <h1 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">
-                {profile.nama}
-              </h1>
+              <div>
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                  <Sparkles className="h-3.5 w-3.5 text-[#FFE600]" />
+                  Profile Peserta
+                </div>
 
-              <p className="mt-1 text-sm text-white/80">
-                Peserta Magang &middot; {profile.division ?? "Belum ada divisi"}
-              </p>
+                <h1 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+                  {profile.nama}
+                </h1>
+
+                <p className="mt-1 text-sm text-white/80">
+                  Peserta Magang &middot;{" "}
+                  {profile.division ?? "Belum ada divisi"}
+                </p>
+              </div>
             </div>
 
             <div className="flex items-center gap-2">
