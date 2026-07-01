@@ -134,6 +134,7 @@ export default async function AdminUsersPage() {
   const activeCount = participants.filter((p) => getMagangStatus(p) === "aktif").length;
   const paCount     = participants.filter((p) => p.division === "PA").length;
   const teCount     = participants.filter((p) => p.division === "TE").length;
+  const teknikCount = participants.filter((p) => p.division === "TEKNIK").length;
 
   const TH_COLS = ["Peserta", "Jurusan / Instansi", "Divisi", "Periode Magang", "Status", "Aksi"];
 
@@ -166,11 +167,12 @@ export default async function AdminUsersPage() {
         </section>
 
         {/* ── Stats ── */}
-        <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
           <StatCard label="Total Peserta" value={participants.length} accent="#0072CE" />
           <StatCard label="Peserta Aktif" value={activeCount}         accent="#10B981" />
           <StatCard label="Divisi PA"     value={paCount}             accent="#8B5CF6" />
           <StatCard label="Divisi TE"     value={teCount}             accent="#F59E0B" />
+          <StatCard label="Divisi Teknik" value={teknikCount}         accent="#6D28D9" />
         </section>
 
         {/* ── Table ── */}
