@@ -8,7 +8,7 @@ import { adminNavigation } from "@/constants/navigation";
 import { CreateTugasDialog } from "@/components/admin/create-tugas-dialog";
 import { EditTugasDialog } from "@/components/admin/edit-tugas-dialog";
 import { DeleteTugasDialog } from "@/components/admin/delete-tugas-dialog";
-import type { TaskTargetUser } from "@/lib/tasks/get-task-target-users";
+import { getTaskTargetUsers } from "@/lib/tasks/get-task-target-users";
 
 type TaskRow = {
   id: string;
@@ -80,14 +80,7 @@ export default async function AdminTugasPage() {
 
   const tasks = (tasksData ?? []) as TaskRow[];
 
-  const { data: participantsData } = await supabase
-    .from("profiles")
-    .select("id, nama, username, division")
-    .eq("role", "peserta")
-    .eq("is_active", true)
-    .order("nama", { ascending: true });
-
-  const participants = (participantsData ?? []) as TaskTargetUser[];
+  const participants = await getTaskTargetUsers({ assignType: "all" });
 
   // Stats
   const totalTugas = tasks.length;
