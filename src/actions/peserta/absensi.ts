@@ -100,7 +100,7 @@ export async function checkInAttendance(
   }
 
   if (existingAttendance) {
-    const { error: updateError } = await supabase
+    const { data: updated, error: updateError } = await supabase
       .from("absensi")
       .update({
         check_in_at: new Date().toISOString(),
@@ -108,23 +108,39 @@ export async function checkInAttendance(
         check_in_lng: longitude,
         status: "checked_in",
       })
-      .eq("id", existingAttendance.id);
+      .eq("id", existingAttendance.id)
+      .select();
 
     if (updateError) {
       throw new Error(updateError.message);
     }
+
+    if (!updated || updated.length === 0) {
+      throw new Error(
+        "Check-in gagal: data tidak dapat diperbarui (kemungkinan diblokir RLS)."
+      );
+    }
   } else {
-    const { error: insertError } = await supabase.from("absensi").insert({
-      user_id: user.id,
-      tanggal: today,
-      check_in_at: new Date().toISOString(),
-      check_in_lat: latitude,
-      check_in_lng: longitude,
-      status: "checked_in",
-    });
+    const { data: inserted, error: insertError } = await supabase
+      .from("absensi")
+      .insert({
+        user_id: user.id,
+        tanggal: today,
+        check_in_at: new Date().toISOString(),
+        check_in_lat: latitude,
+        check_in_lng: longitude,
+        status: "checked_in",
+      })
+      .select();
 
     if (insertError) {
       throw new Error(insertError.message);
+    }
+
+    if (!inserted || inserted.length === 0) {
+      throw new Error(
+        "Check-in gagal: data tidak dapat disimpan (kemungkinan diblokir RLS)."
+      );
     }
   }
 
@@ -185,7 +201,7 @@ export async function checkOutAttendance(
     throw new Error("Kamu sudah check-out hari ini.");
   }
 
-  const { error: updateError } = await supabase
+  const { data: updated, error: updateError } = await supabase
     .from("absensi")
     .update({
       check_out_at: new Date().toISOString(),
@@ -193,10 +209,17 @@ export async function checkOutAttendance(
       check_out_lng: longitude,
       status: "completed",
     })
-    .eq("id", existingAttendance.id);
+    .eq("id", existingAttendance.id)
+    .select();
 
   if (updateError) {
     throw new Error(updateError.message);
+  }
+
+  if (!updated || updated.length === 0) {
+    throw new Error(
+      "Check-out gagal: data tidak dapat diperbarui (kemungkinan diblokir RLS)."
+    );
   }
 
   revalidatePath("/peserta/absensi");
