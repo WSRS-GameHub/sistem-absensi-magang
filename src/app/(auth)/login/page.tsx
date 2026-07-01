@@ -83,8 +83,12 @@ export default function LoginPage() {
           <div className="relative z-10 flex w-full flex-col justify-between p-8">
             <div>
               <div className="inline-flex items-center gap-3 rounded-2xl border border-[#0072CE]/10 bg-white px-4 py-2.5 shadow-sm">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0072CE]">
-                  <Building2 className="h-5 w-5 text-white" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl">
+                  <img
+                    src="/pln.png"
+                    alt="Logo PLN"
+                    className="h-full w-full object-contain"
+                  />
                 </div>
 
                 <div>
@@ -98,11 +102,6 @@ export default function LoginPage() {
               </div>
 
               <div className="mt-10 max-w-lg">
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#0072CE]/10 bg-[#0072CE]/[0.04] px-3.5 py-1.5 text-xs font-medium text-[#0072CE]">
-                  <Sparkles className="h-3.5 w-3.5 text-[#FFE600]" />
-                  Sistem Monitoring Peserta Magang
-                </div>
-
                 <h1 className="mt-5 text-[2.1rem] font-bold leading-[1.15] tracking-tight text-slate-900">
                   Aplikasi Tugas dan Absensi{" "}
                   <span className="text-[#0072CE]">Peserta Magang</span>{" "}
@@ -161,8 +160,12 @@ export default function LoginPage() {
           <div className="w-full max-w-md">
             {/* MOBILE HEADER */}
             <div className="mb-5 flex items-center gap-3 lg:hidden">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#0072CE]">
-                <Building2 className="h-5 w-5 text-white" />
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl">
+                <img
+                  src="/pln.png"
+                  alt="Logo PLN"
+                  className="h-full w-full object-contain"
+                />
               </div>
               <div>
                 <h2 className="text-sm font-semibold tracking-tight text-slate-900">
