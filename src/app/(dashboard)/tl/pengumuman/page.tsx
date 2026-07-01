@@ -106,7 +106,6 @@ export default async function TLPengumumanPage() {
               <span className="inline-flex items-center rounded-full bg-[#FFE600] px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-widest text-[#003580]">
                 Pemberitahuan
               </span>
-              <h3 className="text-base font-bold text-[#003580]">Info Penting</h3>
             </div>
 
             <div className="grid gap-3">
@@ -185,7 +184,6 @@ export default async function TLPengumumanPage() {
             <span className="inline-flex items-center rounded-full bg-[#0072CE]/15 px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-widest text-[#0072CE]">
               Pengumuman
             </span>
-            <h3 className="text-base font-bold text-[#003580]">Info Umum</h3>
           </div>
 
           <div className="grid gap-3">
