@@ -8,8 +8,8 @@ export const adminNavigation = [
     icon: "dashboard",
   },
   {
-    title: "Users",
-    href: "/admin/users",
+    title: "Peserta",
+    href: "/admin/peserta",
     icon: "users",
   },
   {

@@ -209,7 +209,7 @@ export default async function AdminDashboardPage() {
               Selamat datang kembali 👋
             </h1>
             <p className="mt-1 text-[13px] text-white/70">
-              Ringkasan singkat untuk monitoring sistem.
+              Pastikan peserta, absensi, tugas, dan pengumuman terkelola dengan baik
             </p>
           </div>
           <div
@@ -238,11 +238,8 @@ export default async function AdminDashboardPage() {
                   className="inline-block rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider"
                   style={{ background: B_LIGHT, color: B }}
                 >
-                  Ringkas
-                </span>
-                <h3 className="mt-2 text-[15px] font-semibold text-[#1A1A2E]">
                   Akses Cepat
-                </h3>
+                </span>
                 <p className="mt-0.5 text-[12px] text-[#5A6B7A]">
                   Langsung buka halaman yang sering dipakai.
                 </p>
