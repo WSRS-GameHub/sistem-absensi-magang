@@ -14,6 +14,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { pesertaNavigation } from "@/constants/navigation";
 
+// Timezone acuan untuk seluruh format tanggal/jam di halaman ini.
+const TIMEZONE = "Asia/Jakarta";
+
 type ProfileRow = {
   id: string;
   nama: string;
@@ -58,12 +61,25 @@ type NotificationRow = {
   created_at: string;
 };
 
+/**
+ * Mengambil tanggal hari ini dalam format YYYY-MM-DD
+ * berdasarkan timezone Asia/Jakarta (bukan UTC server),
+ * supaya tidak salah tanggal saat mendekati tengah malam WIB.
+ */
+function getTodayJakarta(): string {
+  const now = new Date();
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONE,
+  }).format(now); // format: YYYY-MM-DD
+}
+
 function formatDate(value: string | null) {
   if (!value) return "-";
   return new Date(value).toLocaleDateString("id-ID", {
     day: "2-digit",
     month: "short",
     year: "numeric",
+    timeZone: TIMEZONE,
   });
 }
 
@@ -75,6 +91,16 @@ function formatDateTime(value: string | null) {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: TIMEZONE,
+  });
+}
+
+function formatTime(value: string | null) {
+  if (!value) return "-";
+  return new Date(value).toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: TIMEZONE,
   });
 }
 
@@ -111,7 +137,7 @@ export default async function PesertaDashboardPage() {
     .maybeSingle();
 
   const profile = (profileData ?? null) as ProfileRow | null;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayJakarta();
 
   const { data: attendanceData } = await supabase
     .from("absensi")
@@ -234,9 +260,7 @@ export default async function PesertaDashboardPage() {
                 </span>
                 <span className="text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>
                   {attendance
-                    ? `Check-in ${attendance.check_in_at
-                        ? new Date(attendance.check_in_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
-                        : "-"}`
+                    ? `Check-in ${formatTime(attendance.check_in_at)}`
                     : "Belum absen hari ini"}
                 </span>
               </div>
