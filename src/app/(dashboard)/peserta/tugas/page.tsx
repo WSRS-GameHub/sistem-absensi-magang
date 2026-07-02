@@ -126,7 +126,7 @@ export default async function PesertaTugasPage() {
               TUGAS PESERTA
             </div>
             <p className="text-sm text-blue-50 sm:text-[15px]">
-              Pantau seluruh tugasmu dan progres pengerjaannya di satu tempat.
+              Pantau selalu tugasmu dan progres pengerjaannya!.
             </p>
           </div>
         </section>
