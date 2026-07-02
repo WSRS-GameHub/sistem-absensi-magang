@@ -171,8 +171,7 @@ export default async function TLTugasPage() {
             </span>
             <p className="text-sm font-medium leading-relaxed text-white/90">
               Kelola dan monitor tugas peserta magang divisi{" "}
-              <span className="font-bold text-[#FFE600]">{division}</span> secara
-              terpusat dan real-time.
+              <span className="font-bold text-[#FFE600]">{division}</span>
             </p>
           </div>
         </div>

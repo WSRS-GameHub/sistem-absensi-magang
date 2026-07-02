@@ -14,6 +14,9 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { DashboardPageHeader } from "@/components/layout/dashboard-page-header";
 import { tlNavigation } from "@/constants/navigation";
 
+// Timezone acuan untuk seluruh format tanggal/jam di halaman ini.
+const TIMEZONE = "Asia/Jakarta";
+
 type ProfileRow = {
   id: string;
   nama: string;
@@ -30,12 +33,25 @@ type AttendanceRow = {
   status: string;
 };
 
+/**
+ * Mengambil tanggal hari ini dalam format YYYY-MM-DD
+ * berdasarkan timezone Asia/Jakarta (bukan UTC server),
+ * supaya tidak salah tanggal saat mendekati tengah malam WIB.
+ */
+function getTodayJakarta(): string {
+  const now = new Date();
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONE,
+  }).format(now); // format: YYYY-MM-DD
+}
+
 function formatTime(value: string | null) {
   if (!value) return "-";
 
   return new Date(value).toLocaleTimeString("id-ID", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: TIMEZONE,
   });
 }
 
@@ -61,7 +77,7 @@ export default async function TLDashboardPage() {
   const { division } = await getTLScope();
   const supabase = await createClient();
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayJakarta();
 
   const { data: participantsData } = await supabase
     .from("profiles")

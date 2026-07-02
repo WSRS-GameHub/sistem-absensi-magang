@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   ClipboardList,
-  FileText,
   Users2,
   CheckCircle2,
   Layers3,
@@ -36,7 +35,6 @@ type TaskUserRow = {
   submitted_at: string | null;
   selesai_at: string | null;
   submission_text: string | null;
-  submission_file_url: string | null;
   created_at: string;
   profile?: ProfileRow | null;
 };
@@ -120,7 +118,7 @@ export default async function TLTaskDetailPage({
 
   const { data: taskUsersData, error: taskUsersError } = await supabase
     .from("tugas_user")
-    .select("id, user_id, status, submitted_at, selesai_at, submission_text, submission_file_url, created_at")
+    .select("id, user_id, status, submitted_at, selesai_at, submission_text, created_at")
     .eq("tugas_id", taskRow.id)
     .order("created_at", { ascending: true });
 
@@ -423,12 +421,6 @@ export default async function TLTaskDetailPage({
                         <p className="mt-1 text-sm text-gray-500 line-clamp-2">{item.submission_text ?? "-"}</p>
                       </div>
                     </div>
-                    {item.submission_file_url ? (
-                      <a href={item.submission_file_url} target="_blank" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[#0072CE] hover:underline">
-                        <FileText className="h-4 w-4" />
-                        Lihat File
-                      </a>
-                    ) : null}
                     <div className="mt-3">
                       {item.status === "submitted" ? (
                         <ApproveTugasButton taskUserId={item.id} taskId={taskRow.id} role="tl" />

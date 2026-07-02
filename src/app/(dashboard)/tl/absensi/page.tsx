@@ -12,6 +12,9 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { DashboardPageHeader } from "@/components/layout/dashboard-page-header";
 import { tlNavigation } from "@/constants/navigation";
 
+// Timezone acuan untuk seluruh format & perhitungan tanggal/jam di halaman ini.
+const TIMEZONE = "Asia/Jakarta";
+
 type AttendanceRow = {
   id: string;
   user_id: string;
@@ -29,12 +32,31 @@ type ProfileRow = {
   division: "PA" | "TE" | "TEKNIK" | null;
 };
 
+/**
+ * Mengambil tahun & bulan berjalan (sebagai number) berdasarkan
+ * timezone Asia/Jakarta, bukan timezone server.
+ */
+function getCurrentYearMonthJakarta(): { year: number; month: number } {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(now);
+
+  const year = Number(parts.find((p) => p.type === "year")?.value);
+  const month = Number(parts.find((p) => p.type === "month")?.value); // 1-12
+
+  return { year, month };
+}
+
 function formatDate(value: string) {
   return new Date(value).toLocaleDateString("id-ID", {
     weekday: "short",
     day: "2-digit",
     month: "short",
     year: "numeric",
+    timeZone: TIMEZONE,
   });
 }
 
@@ -44,6 +66,7 @@ function formatTime(value: string | null) {
   return new Date(value).toLocaleTimeString("id-ID", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: TIMEZONE,
   });
 }
 
@@ -81,27 +104,25 @@ export default async function TLAbsensiPage({
   const { division } = await getTLScope();
   const supabase = await createClient();
 
-  const now = new Date();
+  const { year: currentYear, month: currentMonth } = getCurrentYearMonthJakarta();
 
   const selectedMonth =
-    params?.month?.trim() ||
-    String(now.getMonth() + 1).padStart(2, "0");
+    params?.month?.trim() || String(currentMonth).padStart(2, "0");
 
   const selectedDate = params?.date?.trim() || "";
 
   const monthIndex = Number(selectedMonth) - 1;
 
-  const monthStart = new Date(now.getFullYear(), monthIndex, 1);
+  const monthStart = new Date(Date.UTC(currentYear, monthIndex, 1));
+  const monthEnd = new Date(Date.UTC(currentYear, monthIndex + 1, 0));
 
-  const monthEnd = new Date(now.getFullYear(), monthIndex + 1, 0);
-
-  const monthStartString = `${monthStart.getFullYear()}-${String(
-    monthStart.getMonth() + 1
+  const monthStartString = `${monthStart.getUTCFullYear()}-${String(
+    monthStart.getUTCMonth() + 1
   ).padStart(2, "0")}-01`;
 
-  const monthEndString = `${monthEnd.getFullYear()}-${String(
-    monthEnd.getMonth() + 1
-  ).padStart(2, "0")}-${String(monthEnd.getDate()).padStart(2, "0")}`;
+  const monthEndString = `${monthEnd.getUTCFullYear()}-${String(
+    monthEnd.getUTCMonth() + 1
+  ).padStart(2, "0")}-${String(monthEnd.getUTCDate()).padStart(2, "0")}`;
 
   const { data: profilesData, error: profilesError } = await supabase
     .from("profiles")
@@ -188,10 +209,6 @@ export default async function TLAbsensiPage({
                 Riwayat Kehadiran Peserta
               </h2>
 
-              <p className="mt-2 text-sm leading-6" style={{ color: "rgba(255,255,255,0.75)" }}>
-                Pantau absensi dan aktivitas check-in &amp; check-out peserta
-                magang divisi {division} secara real-time.
-              </p>
             </div>
 
             {/* Right: Filter */}

@@ -238,7 +238,7 @@ export default async function PesertaTaskDetailPage({
               Detail Tugas
             </div>
             <p className="text-sm text-blue-100 sm:text-[15px]">
-              Pantau seluruh tugasmu dan progres pengerjaannya di satu tempat.
+              Pantau selalu tugasmu dan progres pengerjaannya!
             </p>
           </div>
         </section>
@@ -253,7 +253,7 @@ export default async function PesertaTaskDetailPage({
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-[#1E88E5]">
-                  Judul Tugas
+                Tugas
                 </p>
                 <span
                   className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadgeClass(
