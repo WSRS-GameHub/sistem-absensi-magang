@@ -253,7 +253,6 @@ export default async function PesertaProfilePage() {
 
             <div className="mt-5 flex gap-3 rounded-2xl border-l-4 border-[#FFE600] bg-[#0072CE]/[0.04] p-4">
               <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0072CE] text-white">
-                <Sparkles className="h-3.5 w-3.5" />
               </div>
               <p className="text-sm leading-7 text-muted-foreground">
                 Halaman ini menampilkan informasi akun peserta magang pada
