@@ -145,7 +145,7 @@ export default async function ManagerPesertaPage() {
               Monitoring Users
             </div>
             <p className="mt-2 text-sm text-blue-100">
-              Daftar users kegiatan magang per divisi.
+              Daftar peserta magang PLN ULP RIVAI Palembang
             </p>
           </div>
         </section>
@@ -195,7 +195,7 @@ export default async function ManagerPesertaPage() {
 
             <span className="ml-auto text-xs text-muted-foreground">
               {activeCount} aktif · {inactiveCount} tidak aktif dari {participants.length}{" "}
-              users
+              peserta
             </span>
           </div>
 

@@ -15,6 +15,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { managerNavigation } from "@/constants/navigation";
 
+const TIMEZONE = "Asia/Jakarta";
+
 type ProfileRow = {
   id: string;
   nama: string;
@@ -30,7 +32,6 @@ type AttendanceRow = {
   tanggal: string;
   check_in_at: string | null;
   check_out_at: string | null;
-  mulai_magang: string | null;
 };
 
 type TaskRow = {
@@ -39,7 +40,6 @@ type TaskRow = {
   due_date: string | null;
   target_type: "all" | "division" | "individual" | null;
   target_division: "PA" | "TE" | "TEKNIK" | null;
-  mulai_magang: string | null;
 };
 
 type TaskUserRow = {
@@ -47,8 +47,18 @@ type TaskUserRow = {
   tugas_id: string;
   user_id: string;
   status: "pending" | "in_progress" | "submitted" | "selesai";
-  mulai_magang: string | null;
 };
+
+/**
+ * Mengambil tanggal hari ini dalam format YYYY-MM-DD
+ * berdasarkan timezone Asia/Jakarta (bukan UTC server).
+ */
+function getTodayJakarta(): string {
+  const now = new Date();
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONE,
+  }).format(now);
+}
 
 function formatDate(value: string | null) {
   if (!value) return "-";
@@ -57,6 +67,16 @@ function formatDate(value: string | null) {
     day: "2-digit",
     month: "short",
     year: "numeric",
+    timeZone: TIMEZONE,
+  });
+}
+
+function formatTime(value: string | null) {
+  if (!value) return "-";
+  return new Date(value).toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: TIMEZONE,
   });
 }
 
@@ -69,7 +89,7 @@ function isUserActive(item: ProfileRow) {
   if (!item.is_active) return false;
   if (!item.akhir_magang) return true;
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayJakarta();
   return item.akhir_magang >= today;
 }
 
@@ -78,16 +98,16 @@ export default async function ManagerDashboardPage() {
 
   const supabase = createAdminClient();
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayJakarta();
 
   const [
     { count: totalParticipants },
     { count: todayAttendanceCount },
     { count: totalTasks },
     { data: participantsData },
-    { data: attendanceData },
-    { data: tasksData },
-    { data: taskUsersData },
+    { data: attendanceData, error: attendanceError },
+    { data: tasksData, error: tasksError },
+    { data: taskUsersData, error: taskUsersError },
   ] = await Promise.all([
     supabase
       .from("profiles")
@@ -112,25 +132,33 @@ export default async function ManagerDashboardPage() {
       .order("mulai_magang", { ascending: false })
       .limit(4),
 
+    // Kolom "mulai_magang" hanya ada di tabel profiles, bukan di absensi.
+    // Order di sini pakai created_at supaya query tidak gagal.
     supabase
       .from("absensi")
-      .select("id, user_id, tanggal, check_in_at, check_out_at, mulai_magang")
+      .select("id, user_id, tanggal, check_in_at, check_out_at")
       .eq("tanggal", today)
-      .order("mulai_magang", { ascending: false })
+      .order("created_at", { ascending: false })
       .limit(4),
 
+    // Sama halnya untuk tabel tugas.
     supabase
       .from("tugas")
-      .select("id, title, due_date, target_type, target_division, mulai_magang")
-      .order("mulai_magang", { ascending: false })
+      .select("id, title, due_date, target_type, target_division")
+      .order("created_at", { ascending: false })
       .limit(4),
 
+    // Sama halnya untuk tabel tugas_user.
     supabase
       .from("tugas_user")
-      .select("id, tugas_id, user_id, status, mulai_magang")
-      .order("mulai_magang", { ascending: false })
+      .select("id, tugas_id, user_id, status")
+      .order("created_at", { ascending: false })
       .limit(200),
   ]);
+
+  if (attendanceError) throw new Error(attendanceError.message);
+  if (tasksError) throw new Error(tasksError.message);
+  if (taskUsersError) throw new Error(taskUsersError.message);
 
   const participants = (participantsData ?? []) as ProfileRow[];
   const attendances = (attendanceData ?? []) as AttendanceRow[];
@@ -167,9 +195,9 @@ export default async function ManagerDashboardPage() {
 
   const stats = [
     {
-      title: "Users Aktif",
+      title: "Peserta Aktif",
       value: String(totalParticipants ?? 0),
-      desc: "Users aktif",
+      desc: "Peserta aktif",
       icon: Users,
       tone: "bg-[#0072CE] text-white",
       href: "/manager/peserta",
@@ -210,12 +238,11 @@ export default async function ManagerDashboardPage() {
 
           <div className="relative z-10">
             <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
-              <Sparkles className="h-3.5 w-3.5 text-[#FFE600]" />
               Dashboard Manager
             </div>
 
             <p className="mt-3 max-w-xl text-sm leading-6 text-white/85">
-              Monitoring users, absensi, dan progres tugas magang.
+              Monitoring peserta, absensi, dan progres tugas magang.
             </p>
           </div>
         </section>
@@ -265,7 +292,7 @@ export default async function ManagerDashboardPage() {
                 </h3>
 
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Monitoring tugas users.
+                  Monitoring tugas peserta.
                 </p>
               </div>
 
@@ -396,14 +423,7 @@ export default async function ManagerDashboardPage() {
                       </div>
 
                       <span className="rounded-full bg-[#FFE600]/25 px-2.5 py-1 text-xs font-semibold text-[#0A2540]">
-                        {item.check_in_at
-                          ? new Date(
-                              item.check_in_at
-                            ).toLocaleTimeString("id-ID", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : "-"}
+                        {formatTime(item.check_in_at)}
                       </span>
                     </div>
                   </div>
@@ -417,16 +437,16 @@ export default async function ManagerDashboardPage() {
           </section>
         </div>
 
-        {/* Users aktif - sekarang sebagai tabel */}
+        {/* Peserta aktif - sekarang sebagai tabel */}
         <section className="rounded-[22px] border border-[#0072CE]/10 bg-card p-5 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                Users Aktif
+                Peserta Aktif
               </h3>
 
               <p className="mt-1 text-sm text-muted-foreground">
-                Users terbaru yang aktif.
+                Peserta terbaru yang aktif.
               </p>
             </div>
 
@@ -491,7 +511,7 @@ export default async function ManagerDashboardPage() {
                       colSpan={4}
                       className="px-4 py-10 text-center text-sm text-muted-foreground"
                     >
-                      Belum ada users.
+                      Belum ada peserta.
                     </td>
                   </tr>
                 )}
@@ -542,28 +562,9 @@ export default async function ManagerDashboardPage() {
               })
             ) : (
               <div className="rounded-2xl border border-dashed border-[#0072CE]/20 p-8 text-center text-sm text-muted-foreground">
-                Belum ada users.
+                Belum ada peserta.
               </div>
             )}
-          </div>
-        </section>
-
-        {/* Informasi akses */}
-        <section className="flex gap-3 rounded-[22px] border-l-4 border-[#FFE600] bg-[#0072CE]/[0.04] p-5 shadow-sm">
-          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0072CE] text-white">
-            <CheckCircle2 className="h-4.5 w-4.5" />
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold tracking-tight text-foreground">
-              Informasi Akses
-            </h3>
-
-            <p className="mt-1.5 text-sm leading-7 text-muted-foreground">
-              Manager hanya memiliki akses monitoring untuk melihat
-              data users, absensi, dan progres tugas tanpa
-              mengubah data sistem.
-            </p>
           </div>
         </section>
       </div>
