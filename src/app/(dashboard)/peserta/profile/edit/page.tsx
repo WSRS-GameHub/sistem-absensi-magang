@@ -65,8 +65,7 @@ export default async function PesertaEditProfilePage() {
 
           <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                <Sparkles className="h-3.5 w-3.5 text-[#FFE600]" />
+              <div className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#FFE600] px-3 py-1 text-xs font-bold tracking-wide text-[#0072CE]">
                 Edit Profile
               </div>
 
