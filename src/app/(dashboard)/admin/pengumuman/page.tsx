@@ -10,6 +10,9 @@ import { CreatePengumumanDialog } from "@/components/pengumuman/create-pengumuma
 import { EditPengumumanDialog } from "@/components/pengumuman/edit-pengumuman-dialog";
 import { DeletePengumumanDialog } from "@/components/pengumuman/delete-pengumuman-dialog";
 
+// Timezone acuan untuk seluruh format tanggal/jam di halaman ini.
+const TIMEZONE = "Asia/Jakarta";
+
 type AnnouncementRow = {
   id: string;
   title: string;
@@ -33,6 +36,7 @@ function formatDateTime(value: string) {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: TIMEZONE,
   });
 }
 
@@ -42,6 +46,7 @@ function formatDate(value: string | null) {
     day: "2-digit",
     month: "long",
     year: "numeric",
+    timeZone: TIMEZONE,
   });
 }
 

@@ -8,6 +8,9 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { adminNavigation } from "@/constants/navigation";
 import { ApproveTugasButton } from "@/components/tasks/approve-tugas-button";
 
+// Timezone acuan untuk seluruh format tanggal/jam di halaman ini.
+const TIMEZONE = "Asia/Jakarta";
+
 type TaskRow = {
   id: string;
   title: string;
@@ -52,6 +55,7 @@ function formatDate(value: string | null) {
     day: "2-digit",
     month: "short",
     year: "numeric",
+    timeZone: TIMEZONE,
   });
 }
 
@@ -63,6 +67,7 @@ function formatDateTime(value: string | null) {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: TIMEZONE,
   });
 }
 

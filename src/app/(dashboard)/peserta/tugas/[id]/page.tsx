@@ -9,6 +9,9 @@ import { DashboardPageHeader } from "@/components/layout/dashboard-page-header";
 import { pesertaNavigation } from "@/constants/navigation";
 import { TaskDetailClient } from "@/components/peserta/task-detail-client";
 
+// Timezone acuan untuk seluruh format tanggal di halaman ini.
+const TIMEZONE = "Asia/Jakarta";
+
 type TaskRow = {
   id: string;
   title: string;
@@ -33,6 +36,7 @@ function formatDate(value: string | null) {
     day: "2-digit",
     month: "short",
     year: "numeric",
+    timeZone: TIMEZONE,
   });
 }
 

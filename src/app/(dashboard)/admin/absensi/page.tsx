@@ -4,6 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { adminNavigation } from "@/constants/navigation";
 
+// Timezone acuan untuk seluruh format tanggal/jam di halaman ini.
+const TIMEZONE = "Asia/Jakarta";
+
 type AttendanceRow = {
   id: string;
   user_id: string;
@@ -18,6 +21,9 @@ type ProfileRow = {
   nama: string;
   username: string;
   division: string | null;
+  // Kolom foto profil. Sesuaikan nama kolom ini jika berbeda di tabel `profiles` kamu
+  // (misalnya "photo_url" atau "foto").
+  avatar_url: string | null;
 };
 
 function formatDate(value: string) {
@@ -25,6 +31,7 @@ function formatDate(value: string) {
     day: "2-digit",
     month: "short",
     year: "numeric",
+    timeZone: TIMEZONE,
   });
 }
 
@@ -33,6 +40,7 @@ function formatTime(value: string | null) {
   return new Date(value).toLocaleTimeString("id-ID", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: TIMEZONE,
   });
 }
 
@@ -117,11 +125,39 @@ function getInitials(nama: string) {
     .toUpperCase();
 }
 
+// Avatar peserta: pakai foto profil jika sudah diganti, fallback ke inisial jika belum ada.
+function ParticipantAvatar({
+  profile,
+  divStyle,
+}: {
+  profile: ProfileRow | null;
+  divStyle: { avatar: string };
+}) {
+  if (profile?.avatar_url) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={profile.avatar_url}
+        alt={profile.nama}
+        className="h-8 w-8 flex-shrink-0 rounded-full border-2 border-white object-cover shadow-sm"
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-extrabold uppercase ${divStyle.avatar}`}
+    >
+      {profile ? getInitials(profile.nama) : "?"}
+    </div>
+  );
+}
+
 function getMonthOptions() {
   const year = new Date().getFullYear();
   return ["01","02","03","04","05","06","07","08","09","10","11","12"].map((month) => ({
     value: month,
-    label: new Date(`${year}-${month}-01`).toLocaleDateString("id-ID", { month: "long" }),
+    label: new Date(`${year}-${month}-01`).toLocaleDateString("id-ID", { month: "long", timeZone: TIMEZONE }),
   }));
 }
 
@@ -162,7 +198,7 @@ export default async function AdminAbsensiPage({
   const userIds = [...new Set(attendanceRows.map((row) => row.user_id))];
   const { data: profilesData } = await supabase
     .from("profiles")
-    .select("id, nama, username, division")
+    .select("id, nama, username, division, avatar_url")
     .in("id", userIds);
 
   const profiles = (profilesData ?? []) as ProfileRow[];
@@ -364,11 +400,7 @@ export default async function AdminAbsensiPage({
                         {/* Peserta */}
                         <td className="px-3.5 py-2.5">
                           <div className="flex items-center gap-2.5">
-                            <div
-                              className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-extrabold uppercase ${divStyle.avatar}`}
-                            >
-                              {profile ? getInitials(profile.nama) : "?"}
-                            </div>
+                            <ParticipantAvatar profile={profile} divStyle={divStyle} />
                             <div>
                               <div className="text-[13px] font-bold" style={{ color: "#0F1D2A" }}>
                                 {profile?.nama ?? "-"}
