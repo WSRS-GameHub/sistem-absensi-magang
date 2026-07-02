@@ -37,7 +37,6 @@ type TaskUserRow = {
   submitted_at: string | null;
   selesai_at: string | null;
   submission_text: string | null;
-  submission_file_url: string | null;
   created_at: string;
 };
 
@@ -136,7 +135,7 @@ export default async function AdminTaskDetailPage({
 
   const { data: taskUsersData, error: taskUsersError } = await supabase
     .from("tugas_user")
-    .select("id, user_id, status, submitted_at, selesai_at, submission_text, submission_file_url, created_at")
+    .select("id, user_id, status, submitted_at, selesai_at, submission_text, created_at")
     .eq("tugas_id", taskRow.id)
     .order("created_at", { ascending: true });
 
