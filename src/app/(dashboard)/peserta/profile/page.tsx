@@ -81,7 +81,7 @@ export default async function PesertaProfilePage() {
               </div>
 
               <div>
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                <div className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#FFE600] px-3 py-1 text-xs font-bold tracking-wide text-[#0072CE]">
                   Profile Peserta
                 </div>
 
