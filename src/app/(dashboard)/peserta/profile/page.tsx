@@ -82,7 +82,6 @@ export default async function PesertaProfilePage() {
 
               <div>
                 <div className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                  <Sparkles className="h-3.5 w-3.5 text-[#FFE600]" />
                   Profile Peserta
                 </div>
 
