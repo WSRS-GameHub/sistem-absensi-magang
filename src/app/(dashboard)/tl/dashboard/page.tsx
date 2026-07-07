@@ -468,7 +468,7 @@ export default async function TLDashboardPage() {
         <div className="page-header-section">
           <span className="header-pill">Monitoring Divisi</span>
           <p className="header-desc">
-            Pantau absensi dan aktivitas peserta magang divisi {division} secara real-time.
+            Pantau absensi dan aktivitas peserta magang divisi {division} .
           </p>
         </div>
 
