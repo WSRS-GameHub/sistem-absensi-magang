@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { createClient } from "@/lib/supabase/server";
@@ -48,18 +49,11 @@ function getStatusBadge(status: TaskUserRow["status"]) {
   return "bg-amber-100 text-amber-700";
 }
 
-function getCardAccent(status: TaskUserRow["status"]) {
-  if (status === "in_progress") return "border-blue-200 bg-gradient-to-br from-blue-50 via-white to-white";
-  if (status === "submitted") return "border-violet-200 bg-gradient-to-br from-violet-50 via-white to-white";
-  if (status === "selesai") return "border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-white";
-  return "border-amber-200 bg-gradient-to-br from-amber-50 via-white to-white";
-}
-
-function getCardHoverAccent(status: TaskUserRow["status"]) {
-  if (status === "in_progress") return "hover:border-blue-300";
-  if (status === "submitted") return "hover:border-violet-300";
-  if (status === "selesai") return "hover:border-emerald-300";
-  return "hover:border-amber-300";
+function getStatusDot(status: TaskUserRow["status"]) {
+  if (status === "in_progress") return "bg-blue-500";
+  if (status === "submitted") return "bg-violet-500";
+  if (status === "selesai") return "bg-emerald-500";
+  return "bg-amber-500";
 }
 
 function getStatusLabel(status: TaskUserRow["status"]) {
@@ -154,54 +148,55 @@ export default async function PesertaTugasPage() {
           </div>
         </section>
 
-        {/* Daftar tugas */}
-        <section className="space-y-3">
+        {/* Daftar tugas — bentuk list ringkas, bukan card besar */}
+        <section className="overflow-hidden rounded-[20px] border border-blue-100 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-blue-50 px-4 py-3 sm:px-5">
+            <h3 className="text-sm font-semibold tracking-tight text-blue-900">
+              Daftar Tugas
+            </h3>
+            <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-bold text-blue-700">
+              {rows.length} tugas
+            </span>
+          </div>
+
           {rows.length > 0 ? (
-            rows.map((item) => (
-              <div
-                key={item.id}
-                className={`rounded-[22px] border p-4 shadow-sm transition-colors sm:p-5 ${getCardAccent(
-                  item.status
-                )} ${getCardHoverAccent(item.status)}`}
-              >
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-base font-semibold tracking-tight text-blue-900 sm:text-lg">
-                        {item.task?.title ?? "Data tugas tidak ditemukan"}
-                      </h3>
-
-                      <span
-                        className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getStatusBadge(
-                          item.status
-                        )}`}
-                      >
-                        {getStatusLabel(item.status)}
-                      </span>
-                    </div>
-
-                    <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
-                      {item.task?.description ?? "Belum ada deskripsi untuk tugas ini."}
-                    </p>
-
-                    <div className="mt-3 flex flex-col gap-1 text-sm text-slate-500 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
-                      <span>Deadline: {formatDate(item.task?.due_date ?? null)}</span>
-                      <span className="hidden text-blue-300 sm:inline">•</span>
-                      <span>Target: {getTargetLabel(item.task)}</span>
-                    </div>
-                  </div>
-
+            <ul className="divide-y divide-blue-50">
+              {rows.map((item) => (
+                <li key={item.id}>
                   <Link
                     href={`/peserta/tugas/${item.tugas_id}`}
-                    className="inline-flex h-9 w-fit items-center justify-center rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 px-4 text-sm font-semibold text-blue-900 shadow-sm transition-colors hover:from-amber-300 hover:to-amber-400"
+                    className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-blue-50/40 sm:px-5"
                   >
-                    Detail →
+                    <span
+                      className={`h-2 w-2 flex-shrink-0 rounded-full ${getStatusDot(item.status)}`}
+                    />
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13.5px] font-semibold text-blue-900">
+                        {item.task?.title ?? "Data tugas tidak ditemukan"}
+                      </p>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11.5px] text-slate-500">
+                        <span>Deadline: {formatDate(item.task?.due_date ?? null)}</span>
+                        <span className="text-blue-200">•</span>
+                        <span>{getTargetLabel(item.task)}</span>
+                      </div>
+                    </div>
+
+                    <span
+                      className={`hidden shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium sm:inline-flex ${getStatusBadge(
+                        item.status
+                      )}`}
+                    >
+                      {getStatusLabel(item.status)}
+                    </span>
+
+                    <ChevronRight className="h-4 w-4 shrink-0 text-blue-300" />
                   </Link>
-                </div>
-              </div>
-            ))
+                </li>
+              ))}
+            </ul>
           ) : (
-            <div className="rounded-[22px] border border-dashed border-blue-200 bg-gradient-to-br from-blue-50/40 to-white p-8 text-center text-sm text-slate-400 shadow-sm sm:p-10">
+            <div className="p-8 text-center text-sm text-slate-400 sm:p-10">
               Belum ada tugas yang diberikan untukmu saat ini.
             </div>
           )}

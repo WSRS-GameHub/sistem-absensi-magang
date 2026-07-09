@@ -5,6 +5,7 @@ import {
   CalendarCheck2,
   CircleCheckBig,
   Clock3,
+  FileText,
   LogIn,
   LogOut,
   MapPin,
@@ -15,10 +16,13 @@ import {
   checkInAttendance,
   checkOutAttendance,
 } from "@/actions/peserta/absensi";
+import { IzinModal } from "@/components/peserta/izin-modal";
 
 type AttendanceData = {
   check_in_at: string | null;
   check_out_at: string | null;
+  status?: string;
+  keterangan?: string | null;
 };
 
 interface AbsensiClientProps {
@@ -74,15 +78,19 @@ export function AbsensiClient({ todayAttendance }: AbsensiClientProps) {
   const [loadingIn, startInTransition] = useTransition();
   const [loadingOut, startOutTransition] = useTransition();
   const [message, setMessage] = useState("");
+  const [izinOpen, setIzinOpen] = useState(false);
 
+  const isIzin = todayAttendance?.status === "izin";
   const isCheckedIn = Boolean(todayAttendance?.check_in_at);
   const isCheckedOut = Boolean(todayAttendance?.check_out_at);
 
-  const statusLabel = !isCheckedIn
-    ? "Belum Absen"
-    : isCheckedIn && !isCheckedOut
-      ? "Sudah Datang"
-      : "Selesai";
+  const statusLabel = isIzin
+    ? "Izin"
+    : !isCheckedIn
+      ? "Belum Absen"
+      : isCheckedIn && !isCheckedOut
+        ? "Sudah Datang"
+        : "Selesai";
 
   const handleCheckIn = async () => {
     setMessage("");
@@ -146,16 +154,17 @@ export function AbsensiClient({ todayAttendance }: AbsensiClientProps) {
             </div>
 
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Lakukan absensi menggunakan lokasi GPS kantor.
+              Lakukan absensi menggunakan lokasi GPS kantor, atau ajukan izin
+              jika berhalangan hadir.
             </p>
           </div>
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <button
             type="button"
             onClick={handleCheckIn}
-            disabled={loadingIn || isCheckedIn}
+            disabled={loadingIn || isCheckedIn || isIzin}
             className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-primary px-5 text-sm font-medium text-primary-foreground transition-all hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <LogIn className="h-4 w-4" />
@@ -165,11 +174,21 @@ export function AbsensiClient({ todayAttendance }: AbsensiClientProps) {
           <button
             type="button"
             onClick={handleCheckOut}
-            disabled={loadingOut || !isCheckedIn || isCheckedOut}
+            disabled={loadingOut || !isCheckedIn || isCheckedOut || isIzin}
             className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border bg-background px-5 text-sm font-medium transition-all hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
           >
             <LogOut className="h-4 w-4" />
             {loadingOut ? "Memproses..." : "Pulang"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIzinOpen(true)}
+            disabled={isCheckedIn || isIzin}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-amber-300 bg-amber-50 px-5 text-sm font-medium text-amber-700 transition-all hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <FileText className="h-4 w-4" />
+            {isIzin ? "Sudah Izin" : "Izin"}
           </button>
         </div>
 
@@ -215,9 +234,17 @@ export function AbsensiClient({ todayAttendance }: AbsensiClientProps) {
         </div>
 
         <p className="mt-3 text-sm leading-7 text-muted-foreground">
-          Datang dan pulang menggunakan GPS lokasi kantor.
+          {isIzin && todayAttendance?.keterangan
+            ? todayAttendance.keterangan
+            : "Datang dan pulang menggunakan GPS lokasi kantor."}
         </p>
       </div>
+
+      <IzinModal
+        open={izinOpen}
+        onClose={() => setIzinOpen(false)}
+        onSuccess={(msg) => setMessage(msg)}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import {
   MapPin,
   Navigation,
   Ruler,
+  Paperclip,
 } from "lucide-react";
 
 import { requireRole } from "@/lib/auth/require-role";
@@ -25,6 +26,8 @@ type AttendanceRow = {
   check_in_at: string | null;
   check_out_at: string | null;
   status: string;
+  keterangan: string | null;
+  bukti_url: string | null;
 };
 
 /**
@@ -85,6 +88,7 @@ function getStatusBadge(
   checkInAt: string | null,
   checkOutAt: string | null
 ) {
+  if (status === "izin") return { bg: "#fff8e1", color: "#b45309", border: "#fcd34d" };
   if (checkOutAt) return { bg: "#e6f4ea", color: "#1e7e34", border: "#a8d5b5" };
   if (checkInAt) return { bg: "#fff8e1", color: "#b45309", border: "#fcd34d" };
   if (status === "pending") return { bg: "#fff1f0", color: "#c0392b", border: "#fca5a5" };
@@ -96,6 +100,7 @@ function getStatusLabel(
   checkInAt: string | null,
   checkOutAt: string | null
 ) {
+  if (status === "izin") return "Izin";
   if (checkOutAt) return "Pulang";
   if (checkInAt) return "Sudah Datang";
   if (status === "pending") return "Belum Absen";
@@ -137,14 +142,14 @@ export default async function PesertaAbsensiPage({
 
   const { data: todayAttendance } = await supabase
     .from("absensi")
-    .select("check_in_at, check_out_at")
+    .select("check_in_at, check_out_at, status, keterangan")
     .eq("user_id", user.id)
     .eq("tanggal", today)
     .maybeSingle();
 
   let historyQuery = supabase
     .from("absensi")
-    .select("id, tanggal, check_in_at, check_out_at, status")
+    .select("id, tanggal, check_in_at, check_out_at, status, keterangan, bukti_url")
     .eq("user_id", user.id);
 
   if (selectedDate) {
@@ -166,7 +171,23 @@ export default async function PesertaAbsensiPage({
     ascending: false,
   });
 
-  const history = (attendanceHistory ?? []) as AttendanceRow[];
+  const rawHistory = (attendanceHistory ?? []) as AttendanceRow[];
+
+  // Bucket "bukti-izin" bersifat privat, jadi path yang tersimpan di
+  // bukti_url perlu diubah jadi signed URL (link sementara, 1 jam)
+  // sebelum ditampilkan di tabel riwayat.
+  const history = await Promise.all(
+    rawHistory.map(async (item) => {
+      if (!item.bukti_url) return item;
+
+      const { data: signed } = await supabase.storage
+        .from("bukti-izin")
+        .createSignedUrl(item.bukti_url, 3600);
+
+      return { ...item, bukti_url: signed?.signedUrl ?? null };
+    })
+  );
+
   const monthOptions = getMonthOptions();
 
   return (
@@ -199,7 +220,7 @@ export default async function PesertaAbsensiPage({
                 Absensi Peserta
               </span>
               <p className="mt-3 text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
-                Datang dan pulang menggunakan lokasi GPS kantor.
+                Datang dan pulang menggunakan lokasi GPS kantor, atau ajukan izin.
               </p>
             </div>
 
@@ -359,7 +380,7 @@ export default async function PesertaAbsensiPage({
             className="mt-4 overflow-x-auto rounded-xl"
             style={{ border: "1px solid #dde3ed" }}
           >
-            <table className="w-full min-w-[560px] border-collapse">
+            <table className="w-full min-w-[640px] border-collapse">
               <thead>
                 <tr style={{ background: "#EBF5FF" }}>
                   <th
@@ -386,6 +407,12 @@ export default async function PesertaAbsensiPage({
                   >
                     Status
                   </th>
+                  <th
+                    className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider"
+                    style={{ color: "#0072CE" }}
+                  >
+                    Keterangan
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -396,6 +423,8 @@ export default async function PesertaAbsensiPage({
                       item.check_in_at,
                       item.check_out_at
                     );
+                    const isIzin = item.status === "izin";
+
                     return (
                       <tr
                         key={item.id}
@@ -409,10 +438,10 @@ export default async function PesertaAbsensiPage({
                           {formatDate(item.tanggal)}
                         </td>
                         <td className="px-4 py-3.5 text-sm" style={{ color: "#1e293b" }}>
-                          {formatTime(item.check_in_at)}
+                          {isIzin ? "-" : formatTime(item.check_in_at)}
                         </td>
                         <td className="px-4 py-3.5 text-sm" style={{ color: "#1e293b" }}>
-                          {formatTime(item.check_out_at)}
+                          {isIzin ? "-" : formatTime(item.check_out_at)}
                         </td>
                         <td className="px-4 py-3.5">
                           <span
@@ -430,13 +459,36 @@ export default async function PesertaAbsensiPage({
                             )}
                           </span>
                         </td>
+                        <td className="px-4 py-3.5 text-sm" style={{ color: "#475569" }}>
+                          {isIzin ? (
+                            <div className="flex items-center gap-2">
+                              <span className="max-w-[220px] truncate">
+                                {item.keterangan || "-"}
+                              </span>
+                              {item.bukti_url ? (
+                                <a
+                                  href={item.bukti_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex shrink-0 items-center gap-1 text-xs font-medium"
+                                  style={{ color: "#0072CE" }}
+                                >
+                                  <Paperclip className="h-3 w-3" />
+                                  Bukti
+                                </a>
+                              ) : null}
+                            </div>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
                       </tr>
                     );
                   })
                 ) : (
                   <tr>
                     <td
-                      colSpan={4}
+                      colSpan={5}
                       className="px-4 py-10 text-center text-sm italic"
                       style={{ color: "#94a3b8" }}
                     >

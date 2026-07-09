@@ -211,7 +211,7 @@ export default async function PesertaProfilePage() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">
-                      Username / NIM
+                      Username
                     </p>
                     <p className="mt-1 truncate text-sm font-semibold">
                       {profile.username}

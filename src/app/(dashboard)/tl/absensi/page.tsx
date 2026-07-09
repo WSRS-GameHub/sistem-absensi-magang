@@ -22,15 +22,57 @@ type AttendanceRow = {
   check_in_at: string | null;
   check_out_at: string | null;
   status: string;
+  keterangan: string | null;
+  bukti_url: string | null;
   created_at: string;
 };
 
 type ProfileRow = {
   id: string;
   nama: string;
-  username: string;
   division: "PA" | "TE" | "TEKNIK" | null;
+  // Kolom foto profil. Sesuaikan nama kolom ini jika berbeda di tabel `profiles` kamu
+  // (misalnya "photo_url" atau "foto").
+  avatar_url: string | null;
 };
+
+function getInitials(nama: string) {
+  return nama
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+}
+
+// Avatar peserta: pakai foto profil jika sudah diganti, fallback ke inisial jika belum ada.
+function ParticipantAvatar({
+  profile,
+  size = "h-8 w-8 text-xs",
+}: {
+  profile: ProfileRow | undefined;
+  size?: string;
+}) {
+  if (profile?.avatar_url) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={profile.avatar_url}
+        alt={profile.nama}
+        className={`${size} flex-shrink-0 rounded-full border-2 border-white object-cover shadow-sm`}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`flex ${size} flex-shrink-0 items-center justify-center rounded-full font-bold text-white`}
+      style={{ background: "#0072CE" }}
+    >
+      {profile ? getInitials(profile.nama) : "?"}
+    </div>
+  );
+}
 
 /**
  * Mengambil tahun & bulan berjalan (sebagai number) berdasarkan
@@ -70,7 +112,18 @@ function formatTime(value: string | null) {
   });
 }
 
-function getStatus(checkIn: string | null, checkOut: string | null) {
+function getStatus(
+  status: string,
+  checkIn: string | null,
+  checkOut: string | null
+) {
+  if (status === "izin") {
+    return {
+      label: "Izin",
+      className: "bg-orange-500/10 text-orange-600",
+    };
+  }
+
   if (checkIn && checkOut) {
     return {
       label: "Selesai",
@@ -126,7 +179,7 @@ export default async function TLAbsensiPage({
 
   const { data: profilesData, error: profilesError } = await supabase
     .from("profiles")
-    .select("id, nama, username, division")
+    .select("id, nama, division, avatar_url")
     .eq("role", "peserta")
     .eq("division", division)
     .eq("is_active", true)
@@ -143,7 +196,7 @@ export default async function TLAbsensiPage({
   let attendanceQuery = supabase
     .from("absensi")
     .select(
-      "id, user_id, tanggal, check_in_at, check_out_at, status, created_at"
+      "id, user_id, tanggal, check_in_at, check_out_at, status, keterangan, bukti_url, created_at"
     )
     .in("user_id", userIds);
 
@@ -166,7 +219,22 @@ export default async function TLAbsensiPage({
     throw new Error(attendanceError.message);
   }
 
-  const attendances = (attendanceData ?? []) as AttendanceRow[];
+  const rawAttendances = (attendanceData ?? []) as AttendanceRow[];
+
+  // Bucket "bukti-izin" bersifat privat, jadi path yang tersimpan di
+  // bukti_url perlu diubah jadi signed URL (link sementara, 1 jam)
+  // sebelum ditampilkan di tabel.
+  const attendances = await Promise.all(
+    rawAttendances.map(async (row) => {
+      if (!row.bukti_url) return row;
+
+      const { data: signed } = await supabase.storage
+        .from("bukti-izin")
+        .createSignedUrl(row.bukti_url, 3600);
+
+      return { ...row, bukti_url: signed?.signedUrl ?? null };
+    })
+  );
 
   const profileMap = new Map(
     profiles.map((profile) => [profile.id, profile])
@@ -267,8 +335,8 @@ export default async function TLAbsensiPage({
 
         {/* Desktop Table */}
         <div className="hidden overflow-hidden rounded-2xl border bg-card shadow-sm lg:block">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[1000px]">
+          <div className="w-full">
+            <table className="w-full table-fixed">
               <thead>
                 <tr
                   className="text-left text-xs uppercase tracking-wider"
@@ -277,12 +345,12 @@ export default async function TLAbsensiPage({
                     background: "rgba(0,114,206,0.05)",
                   }}
                 >
-                  <th className="px-5 py-4 font-semibold" style={{ color: "#0072CE" }}>Nama</th>
-                  <th className="px-4 py-4 font-semibold" style={{ color: "#0072CE" }}>Username</th>
-                  <th className="px-4 py-4 font-semibold" style={{ color: "#0072CE" }}>Tanggal</th>
-                  <th className="px-4 py-4 font-semibold" style={{ color: "#0072CE" }}>Check-In</th>
-                  <th className="px-4 py-4 font-semibold" style={{ color: "#0072CE" }}>Check-Out</th>
-                  <th className="px-4 py-4 font-semibold" style={{ color: "#0072CE" }}>Status</th>
+                  <th className="w-[24%] px-5 py-4 font-semibold" style={{ color: "#0072CE" }}>Nama</th>
+                  <th className="w-[15%] px-4 py-4 font-semibold" style={{ color: "#0072CE" }}>Tanggal</th>
+                  <th className="w-[12%] px-4 py-4 font-semibold" style={{ color: "#0072CE" }}>Check-In</th>
+                  <th className="w-[12%] px-4 py-4 font-semibold" style={{ color: "#0072CE" }}>Check-Out</th>
+                  <th className="w-[13%] px-4 py-4 font-semibold" style={{ color: "#0072CE" }}>Status</th>
+                  <th className="w-[24%] px-4 py-4 font-semibold" style={{ color: "#0072CE" }}>Keterangan</th>
                 </tr>
               </thead>
 
@@ -291,9 +359,11 @@ export default async function TLAbsensiPage({
                   attendances.map((attendance) => {
                     const profile = profileMap.get(attendance.user_id);
                     const status = getStatus(
+                      attendance.status,
                       attendance.check_in_at,
                       attendance.check_out_at
                     );
+                    const isIzin = attendance.status === "izin";
 
                     return (
                       <tr
@@ -301,19 +371,10 @@ export default async function TLAbsensiPage({
                         className="transition-colors hover:bg-muted/20"
                       >
                         <td className="px-5 py-4">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
-                              style={{ background: "#0072CE" }}
-                            >
-                              {profile?.nama?.charAt(0).toUpperCase() ?? "?"}
-                            </div>
-                            <p className="font-medium">{profile?.nama ?? "-"}</p>
+                          <div className="flex min-w-0 items-center gap-3">
+                            <ParticipantAvatar profile={profile} />
+                            <p className="truncate font-medium">{profile?.nama ?? "-"}</p>
                           </div>
-                        </td>
-
-                        <td className="px-4 py-4 text-sm text-muted-foreground">
-                          {profile?.username ?? "-"}
                         </td>
 
                         <td className="px-4 py-4 text-sm">
@@ -340,6 +401,32 @@ export default async function TLAbsensiPage({
                           >
                             {status.label}
                           </span>
+                        </td>
+
+                        <td className="px-4 py-4">
+                          {isIzin ? (
+                            <div className="flex w-full min-w-0 items-center gap-2">
+                              <span
+                                className="truncate text-sm text-muted-foreground"
+                                title={attendance.keterangan ?? ""}
+                              >
+                                {attendance.keterangan || "-"}
+                              </span>
+                              {attendance.bukti_url ? (
+                                <a
+                                  href={attendance.bukti_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex shrink-0 items-center gap-1 text-xs font-bold"
+                                  style={{ color: "#0072CE" }}
+                                >
+                                  Bukti
+                                </a>
+                              ) : null}
+                            </div>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">–</span>
+                          )}
                         </td>
                       </tr>
                     );
@@ -373,9 +460,11 @@ export default async function TLAbsensiPage({
             attendances.map((attendance) => {
               const profile = profileMap.get(attendance.user_id);
               const status = getStatus(
+                attendance.status,
                 attendance.check_in_at,
                 attendance.check_out_at
               );
+              const isIzin = attendance.status === "izin";
 
               return (
                 <div
@@ -388,19 +477,11 @@ export default async function TLAbsensiPage({
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div
-                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
-                          style={{ background: "#0072CE" }}
-                        >
-                          {profile?.nama?.charAt(0).toUpperCase() ?? "?"}
-                        </div>
+                        <ParticipantAvatar profile={profile} size="h-9 w-9 text-sm" />
                         <div className="min-w-0">
                           <h3 className="truncate font-semibold">
                             {profile?.nama ?? "-"}
                           </h3>
-                          <p className="text-xs text-muted-foreground">
-                            {profile?.username ?? "-"}
-                          </p>
                         </div>
                       </div>
 
@@ -449,6 +530,25 @@ export default async function TLAbsensiPage({
                         </p>
                       </div>
                     </div>
+
+                    {isIzin && (
+                      <div className="mt-3 rounded-xl border border-orange-200 bg-orange-50 p-3">
+                        <p className="text-xs font-semibold text-orange-700">Keterangan Izin</p>
+                        <p className="mt-1 text-sm text-orange-900">
+                          {attendance.keterangan || "-"}
+                        </p>
+                        {attendance.bukti_url ? (
+                          <a
+                            href={attendance.bukti_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-orange-700 underline"
+                          >
+                            Lihat Bukti
+                          </a>
+                        ) : null}
+                      </div>
+                    )}
                   </div>
                 </div>
               );

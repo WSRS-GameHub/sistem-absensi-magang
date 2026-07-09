@@ -99,6 +99,10 @@ export async function checkInAttendance(
     throw new Error("Kamu sudah check-in hari ini.");
   }
 
+  if (existingAttendance?.status === "izin") {
+    throw new Error("Kamu sudah mengajukan izin hari ini.");
+  }
+
   if (existingAttendance) {
     const { data: updated, error: updateError } = await supabase
       .from("absensi")
@@ -228,5 +232,132 @@ export async function checkOutAttendance(
   return {
     success: true,
     message: "Check-out berhasil",
+  };
+}
+
+// ---- Izin ------------------------------------------------------
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_FILE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/pdf",
+];
+
+export async function submitIzin(formData: FormData): Promise<AttendanceResult> {
+  const user = await requireRole(["peserta"]);
+  const supabase = await createClient();
+  const today = getToday();
+
+  const keterangan = formData.get("keterangan");
+  const file = formData.get("file");
+
+  if (typeof keterangan !== "string" || keterangan.trim().length < 5) {
+    throw new Error("Keterangan wajib diisi (minimal 5 karakter).");
+  }
+
+  if (!(file instanceof File) || file.size === 0) {
+    throw new Error("File bukti izin wajib diunggah.");
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error("Ukuran file maksimal 5MB.");
+  }
+
+  if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+    throw new Error("Format file harus JPG, PNG, WEBP, atau PDF.");
+  }
+
+  const { data: existingAttendance, error: fetchError } = await supabase
+    .from("absensi")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("tanggal", today)
+    .maybeSingle();
+
+  if (fetchError) {
+    throw new Error(fetchError.message);
+  }
+
+  if (existingAttendance?.check_in_at) {
+    throw new Error("Kamu sudah check-in hari ini, tidak bisa mengajukan izin.");
+  }
+
+  if (existingAttendance?.status === "izin") {
+    throw new Error("Kamu sudah mengajukan izin hari ini.");
+  }
+
+  // ---- Upload file ke storage (bucket privat) ----
+  const fileExt = file.name.split(".").pop();
+  const fileName = `${today}-${Date.now()}.${fileExt}`;
+  const filePath = `${user.id}/${fileName}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("bukti-izin")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+    });
+
+  if (uploadError) {
+    throw new Error("Gagal mengunggah file: " + uploadError.message);
+  }
+
+  // Catatan: bucket "bukti-izin" bersifat PRIVAT.
+  // Yang disimpan di kolom bukti_url di sini adalah PATH file
+  // (bukan URL langsung), karena bucket privat tidak punya public URL.
+  // Signed URL (link sementara yang bisa dibuka) di-generate on-demand
+  // saat halaman menampilkan riwayat — lihat catatan di page.tsx.
+
+  if (existingAttendance) {
+    const { data: updated, error: updateError } = await supabase
+      .from("absensi")
+      .update({
+        status: "izin",
+        keterangan: keterangan.trim(),
+        bukti_url: filePath,
+      })
+      .eq("id", existingAttendance.id)
+      .select();
+
+    if (updateError) {
+      throw new Error("Gagal menyimpan pengajuan izin: " + updateError.message);
+    }
+
+    if (!updated || updated.length === 0) {
+      throw new Error(
+        "Pengajuan izin gagal: data tidak dapat diperbarui (kemungkinan diblokir RLS)."
+      );
+    }
+  } else {
+    const { data: inserted, error: insertError } = await supabase
+      .from("absensi")
+      .insert({
+        user_id: user.id,
+        tanggal: today,
+        status: "izin",
+        keterangan: keterangan.trim(),
+        bukti_url: filePath,
+      })
+      .select();
+
+    if (insertError) {
+      throw new Error("Gagal menyimpan pengajuan izin: " + insertError.message);
+    }
+
+    if (!inserted || inserted.length === 0) {
+      throw new Error(
+        "Pengajuan izin gagal: data tidak dapat disimpan (kemungkinan diblokir RLS)."
+      );
+    }
+  }
+
+  revalidatePath("/peserta/absensi");
+  revalidatePath("/peserta/dashboard");
+
+  return {
+    success: true,
+    message: "Pengajuan izin berhasil dikirim.",
   };
 }

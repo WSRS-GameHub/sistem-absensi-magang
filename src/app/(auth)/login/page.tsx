@@ -4,13 +4,13 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Building2,
   Eye,
   EyeOff,
   ShieldCheck,
-  Sparkles,
+  ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -21,8 +21,18 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
+const roleLabels: Record<string, string> = {
+  admin: "Admin",
+  "team-leader": "Team Leader",
+  manager: "Manager",
+  peserta: "Peserta Magang",
+};
+
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const role = searchParams.get("role") ?? "";
+  const roleLabel = roleLabels[role] ?? "Pengguna";
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -44,7 +54,7 @@ export default function LoginPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify({ ...values, role }),
       });
 
       const result = await response.json();
@@ -76,7 +86,6 @@ export default function LoginPage() {
       <div className="grid h-full lg:grid-cols-2">
         {/* LEFT SIDE — putih dominan, aksen biru & kuning */}
         <div className="relative hidden overflow-hidden border-r border-[#0072CE]/10 bg-white lg:flex">
-          {/* aksen kuning kecil di pojok */}
           <div className="pointer-events-none absolute -left-8 -top-10 h-32 w-32 rotate-12 rounded-[24px] bg-[#FFE600]/80" />
           <div className="pointer-events-none absolute bottom-10 right-0 h-40 w-40 translate-x-1/2 rounded-full bg-[#0072CE]/[0.06]" />
 
@@ -177,6 +186,16 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Tombol kembali ke pilih role */}
+            <button
+              type="button"
+              onClick={() => router.push("/")}
+              className="mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition-colors hover:text-[#0072CE]"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Ganti peran
+            </button>
+
             {/* LOGIN CARD */}
             <div className="rounded-[30px] border border-[#0072CE]/10 bg-white shadow-sm">
               <div className="p-6 sm:p-7">
@@ -184,11 +203,11 @@ export default function LoginPage() {
                   <div>
                     <div className="inline-flex items-center gap-1.5 rounded-full bg-[#FFE600]/25 px-3 py-1 text-xs font-medium text-[#0A2540]">
                       <ShieldCheck className="h-3.5 w-3.5" />
-                      Secure Login
+                      Login sebagai {roleLabel}
                     </div>
 
                     <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-[1.7rem]">
-                      Login Peserta Magang
+                      Login {roleLabel}
                     </h2>
 
                     <p className="mt-1.5 text-sm leading-6 text-slate-500">

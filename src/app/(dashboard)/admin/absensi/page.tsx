@@ -14,6 +14,8 @@ type AttendanceRow = {
   check_in_at: string | null;
   check_out_at: string | null;
   status: string;
+  keterangan: string | null;
+  bukti_url: string | null;
 };
 
 type ProfileRow = {
@@ -49,19 +51,21 @@ function getStatusLabel(
   checkInAt: string | null,
   checkOutAt: string | null
 ) {
+  if (status === "izin") return "Izin";
   if (checkOutAt) return "Selesai";
   if (checkInAt) return "Sudah Check-In";
   if (status === "pending") return "Belum Absen";
   return status;
 }
 
-type StatusKey = "selesai" | "checkin" | "belum" | "default";
+type StatusKey = "selesai" | "checkin" | "izin" | "belum" | "default";
 
 function getStatusKey(
   status: string,
   checkInAt: string | null,
   checkOutAt: string | null
 ): StatusKey {
+  if (status === "izin") return "izin";
   if (checkOutAt) return "selesai";
   if (checkInAt) return "checkin";
   if (status === "pending") return "belum";
@@ -76,6 +80,10 @@ const statusStyles: Record<StatusKey, { pill: string; dot: string }> = {
   checkin: {
     pill: "bg-blue-50 text-blue-800 border border-blue-200",
     dot: "bg-blue-600",
+  },
+  izin: {
+    pill: "bg-orange-50 text-orange-800 border border-orange-200",
+    dot: "bg-orange-500",
   },
   belum: {
     pill: "bg-amber-50 text-amber-800 border border-amber-200",
@@ -177,7 +185,7 @@ export default async function AdminAbsensiPage({
 
   let query = supabase
     .from("absensi")
-    .select("id, user_id, tanggal, check_in_at, check_out_at, status")
+    .select("id, user_id, tanggal, check_in_at, check_out_at, status, keterangan, bukti_url")
     .order("tanggal", { ascending: false })
     .limit(200);
 
@@ -193,7 +201,22 @@ export default async function AdminAbsensiPage({
   }
 
   const { data: attendanceData } = await query;
-  const attendanceRows = (attendanceData ?? []) as AttendanceRow[];
+  const rawAttendanceRows = (attendanceData ?? []) as AttendanceRow[];
+
+  // Bucket "bukti-izin" bersifat privat, jadi path yang tersimpan di
+  // bukti_url perlu diubah jadi signed URL (link sementara, 1 jam)
+  // sebelum ditampilkan di tabel.
+  const attendanceRows = await Promise.all(
+    rawAttendanceRows.map(async (row) => {
+      if (!row.bukti_url) return row;
+
+      const { data: signed } = await supabase.storage
+        .from("bukti-izin")
+        .createSignedUrl(row.bukti_url, 3600);
+
+      return { ...row, bukti_url: signed?.signedUrl ?? null };
+    })
+  );
 
   const userIds = [...new Set(attendanceRows.map((row) => row.user_id))];
   const { data: profilesData } = await supabase
@@ -217,7 +240,8 @@ export default async function AdminAbsensiPage({
   const totalAbsensi = rows.length;
   const selesai = rows.filter((r) => r.check_out_at).length;
   const sudahCheckIn = rows.filter((r) => r.check_in_at && !r.check_out_at).length;
-  const belumAbsen = rows.filter((r) => !r.check_in_at).length;
+  const izinCount = rows.filter((r) => r.status === "izin").length;
+  const belumAbsen = rows.filter((r) => !r.check_in_at && r.status !== "izin").length;
 
   return (
     <DashboardLayout navigation={adminNavigation}>
@@ -312,7 +336,7 @@ export default async function AdminAbsensiPage({
         </section>
 
         {/* ── STAT CARDS ── */}
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
           {/* Total */}
           <div className="rounded-2xl border-l-[3px] bg-white p-3.5 shadow-sm" style={{ borderLeftColor: "#0072CE" }}>
             <p className="mb-1 text-[10px] font-bold uppercase tracking-wide" style={{ color: "#3D5166" }}>
@@ -333,6 +357,13 @@ export default async function AdminAbsensiPage({
               Sudah Check-In
             </p>
             <span className="text-xl font-bold" style={{ color: "#0F1D2A" }}>{sudahCheckIn}</span>
+          </div>
+          {/* Izin */}
+          <div className="rounded-2xl border-l-[3px] bg-white p-3.5 shadow-sm" style={{ borderLeftColor: "#F97316" }}>
+            <p className="mb-1 text-[10px] font-bold uppercase tracking-wide" style={{ color: "#3D5166" }}>
+              Izin
+            </p>
+            <span className="text-xl font-bold" style={{ color: "#0F1D2A" }}>{izinCount}</span>
           </div>
           {/* Belum Absen */}
           <div className="rounded-2xl border-l-[3px] bg-white p-3.5 shadow-sm" style={{ borderLeftColor: "#EF4444" }}>
@@ -367,10 +398,10 @@ export default async function AdminAbsensiPage({
 
           {/* Table */}
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[800px] border-collapse">
+            <table className="w-full min-w-[920px] border-collapse">
               <thead>
                 <tr style={{ background: "#EEF6FF" }}>
-                  {["Peserta", "Divisi", "Tanggal", "Check-In", "Check-Out", "Status"].map((h) => (
+                  {["Peserta", "Divisi", "Tanggal", "Check-In", "Check-Out", "Status", "Keterangan"].map((h) => (
                     <th
                       key={h}
                       className="border-b px-3.5 py-2.5 text-left text-[10px] font-extrabold uppercase tracking-widest"
@@ -390,6 +421,7 @@ export default async function AdminAbsensiPage({
                     const stStyle = statusStyles[statusKey];
                     const checkIn = formatTime(item.check_in_at);
                     const checkOut = formatTime(item.check_out_at);
+                    const isIzin = item.status === "izin";
 
                     return (
                       <tr
@@ -456,13 +488,41 @@ export default async function AdminAbsensiPage({
                             {getStatusLabel(item.status, item.check_in_at, item.check_out_at)}
                           </span>
                         </td>
+
+                        {/* Keterangan */}
+                        <td className="px-3.5 py-2.5">
+                          {isIzin ? (
+                            <div className="flex max-w-[220px] items-center gap-2">
+                              <span
+                                className="truncate text-[12.5px]"
+                                style={{ color: "#3D5166" }}
+                                title={item.keterangan ?? ""}
+                              >
+                                {item.keterangan || "-"}
+                              </span>
+                              {item.bukti_url ? (
+                                <a
+                                  href={item.bukti_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex shrink-0 items-center gap-1 text-[11px] font-bold"
+                                  style={{ color: "#0072CE" }}
+                                >
+                                  Bukti
+                                </a>
+                              ) : null}
+                            </div>
+                          ) : (
+                            <span className="text-xs" style={{ color: "#7A94A8" }}>–</span>
+                          )}
+                        </td>
                       </tr>
                     );
                   })
                 ) : (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="py-14 text-center text-sm"
                       style={{ color: "#7A94A8" }}
                     >
