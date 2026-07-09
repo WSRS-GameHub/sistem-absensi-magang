@@ -23,7 +23,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 const roleLabels: Record<string, string> = {
   admin: "Admin",
-  "team-leader": "Team Leader",
+  tl: "Team Leader",
   manager: "Manager",
   peserta: "Peserta Magang",
 };

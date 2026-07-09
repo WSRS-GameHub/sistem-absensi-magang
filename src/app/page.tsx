@@ -11,7 +11,7 @@ const roles = [
     icon: ShieldCheck,
   },
   {
-    key: "team-leader",
+    key: "tl",
     label: "Team Leader",
     desc: "Bimbing & pantau peserta di divisi Anda",
     icon: Users,
