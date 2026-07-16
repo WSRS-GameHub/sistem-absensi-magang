@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { DashboardPageHeader } from "@/components/layout/dashboard-page-header";
 import { pesertaNavigation } from "@/constants/navigation";
+import { ExportTugasPdfButton } from "@/components/peserta/export-tugas-pdf-button";
 
 type TaskUserRow = {
   id: string;
@@ -38,6 +39,16 @@ function formatDate(value: string | null) {
   return new Date(value).toLocaleDateString("id-ID", {
     day: "2-digit",
     month: "short",
+    year: "numeric",
+  });
+}
+
+function formatDateLong(value: string | null | undefined) {
+  if (!value) return null;
+
+  return new Date(value).toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "long",
     year: "numeric",
   });
 }
@@ -76,6 +87,14 @@ export default async function PesertaTugasPage() {
   const userSupabase = await createClient();
   const adminSupabase = createAdminClient();
 
+  const { data: profileData } = await userSupabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const profile = (profileData ?? {}) as Record<string, unknown>;
+
   const { data: taskUsersData } = await userSupabase
     .from("tugas_user")
     .select("id, tugas_id, status, submitted_at, selesai_at, created_at")
@@ -107,6 +126,47 @@ export default async function PesertaTugasPage() {
   const inProgress = rows.filter((item) => item.status === "in_progress").length;
   const submitted = rows.filter((item) => item.status === "submitted").length;
   const selesai = rows.filter((item) => item.status === "selesai").length;
+
+  // Nama peserta untuk header laporan PDF — diambil dari tabel "profiles".
+  // Coba beberapa kemungkinan nama kolom (full_name / nama), fallback ke email.
+  const namaPeserta =
+    (profile.full_name as string | undefined) ??
+    (profile.nama as string | undefined) ??
+    (user as { email?: string }).email ??
+    "Peserta";
+
+  // Data identitas tambahan untuk laporan (opsional).
+  // Sesuaikan nama kolom jika berbeda di tabel profiles kamu.
+  const nimPeserta =
+    (profile.nim as string | undefined) ?? (profile.nim_mahasiswa as string | undefined);
+  const jurusanPeserta =
+    (profile.jurusan as string | undefined) ?? (profile.program_studi as string | undefined);
+
+  // Unit/Bagian diambil dari kolom "division" di tabel profiles.
+  const unitBagianPeserta = (profile.division as string | undefined) ?? undefined;
+
+  // Periode magang diambil dari kolom "mulai_magang" dan "akhir_magang".
+  const mulaiMagang = formatDateLong(profile.mulai_magang as string | undefined);
+  const akhirMagang = formatDateLong(profile.akhir_magang as string | undefined);
+  const periodeMagang =
+    mulaiMagang && akhirMagang ? `${mulaiMagang} s/d ${akhirMagang}` : undefined;
+
+  const exportRows = rows
+    .slice()
+    .sort((a, b) => {
+      const da = a.task?.due_date ? new Date(a.task.due_date).getTime() : 0;
+      const db = b.task?.due_date ? new Date(b.task.due_date).getTime() : 0;
+      return da - db;
+    })
+    .map((item, idx) => {
+      const judul = item.task?.title ?? "-";
+      const deskripsi = item.task?.description;
+      return {
+        no: idx + 1,
+        tanggal: formatDate(item.task?.due_date ?? null),
+        uraian: deskripsi ? `${judul}\n${deskripsi}` : judul,
+      };
+    });
 
   return (
     <DashboardLayout navigation={pesertaNavigation}>
@@ -151,12 +211,25 @@ export default async function PesertaTugasPage() {
         {/* Daftar tugas — bentuk list ringkas, bukan card besar */}
         <section className="overflow-hidden rounded-[20px] border border-blue-100 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-blue-50 px-4 py-3 sm:px-5">
-            <h3 className="text-sm font-semibold tracking-tight text-blue-900">
-              Daftar Tugas
-            </h3>
-            <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-bold text-blue-700">
-              {rows.length} tugas
-            </span>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold tracking-tight text-blue-900">
+                Daftar Tugas
+              </h3>
+              <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-bold text-blue-700">
+                {rows.length} tugas
+              </span>
+            </div>
+
+            <ExportTugasPdfButton
+              namaPeserta={namaPeserta}
+              nim={nimPeserta}
+              jurusan={jurusanPeserta}
+              instansi="PT PLN (Persero) ULP Rivai"
+              unitBagian={unitBagianPeserta}
+              alamatInstansi="Jl. Demang Lebar Daun No.170, Lorok Pakjo, Kec. Ilir Bar. I, Kota Palembang, Sumatera Selatan 30151"
+              periode={periodeMagang}
+              rows={exportRows}
+            />
           </div>
 
           {rows.length > 0 ? (
